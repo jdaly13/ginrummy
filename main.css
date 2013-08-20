@@ -1,0 +1,303 @@
+a:hover {text-decoration:none;}
+button {
+display:block;
+border-radius:3px;
+background:#ececec;
+margin:20px;
+width:100px;
+padding:5px;
+text-align:center;
+border:1px solid #999999;
+font-size:10px;
+text-transform:uppercase;
+line-height:14px;
+cursor:pointer;
+color:#91B3C6;
+
+}
+
+[disabled] {
+cursor:default;
+color:#cbcbcb;
+}
+#main_content {
+	width:100%;
+	margin:0 auto;
+	position:relative;
+	min-height:185px
+}
+
+#deck { 
+position:relative;
+margin-left:13%;
+margin-top:25px;
+min-height:inherit;
+}
+
+article {
+position:absolute;
+left:2%;
+top:0px;
+
+}
+
+section.wrapper  {
+	position:relative;
+        max-width: 120px;
+	
+}
+
+section.wrapper.makeRegular {
+    float:left !important;
+    position:relative;
+}
+
+section.wrapper.showdacard {
+    -webkit-transition-duration: 1.5s;
+    transition-duration: 2s;
+    -webkit-transform:translateX(200px);
+     transform:translateX(200px);
+}
+
+section.wrapper.showdacard.flip {
+    
+}
+
+section.wrapper > div {
+	position:absolute;
+	width:85px;
+	height:150px;
+	padding:0 15px;
+	border:1px solid #cccccc;
+	padding-top:0px;
+	border-radius:5px;
+	-webkit-transition: all 1s ease 1.5s;
+    -o-transition: all 1s ease 1.5s;
+    transition: all 1s ease 1.5s;
+}
+
+section.wrapper > div:first-child {
+  -webkit-transform: rotateY(-180deg);
+  transform: rotateY(-180deg);
+  z-index: 0;
+  text-align:center;
+  background-color:white;
+}
+
+section.wrapper  > div.back {
+	z-index:4;
+	background-image:url(images/card_background.png);
+	background-repeat:no-repeat;
+}
+
+
+#player {
+	position:absolute;
+	height:190px;
+	/*width:100%; */
+	margin:0 auto;
+	
+}
+
+
+#player #area {
+	position:relative; 
+}
+
+#comp_player {
+	height:175px;
+	margin:0 auto;	
+}
+
+#comp_player #comp_area  {
+	/*width:100%;
+	margin:0 auto;
+	min-height:200px;
+	position:relative; */
+}
+
+#player #area  div:first-child {
+	/*z-index:5;*/
+
+}
+
+div:first-child span {
+	display:none;
+}
+
+div:first-child a {
+	opacity:0;
+	position:absolute;
+	bottom:2%;
+	left:1px;
+	padding:5px;
+	transition: opacity 0.5s;
+	font-size:10px;
+	text-transform:uppercase;
+	cursor:pointer;
+	font-weight:bold;
+	z-index:100;
+	display:inline-block;
+	font-family:arial;
+	color:#999999;
+	text-decoration:none;
+}
+
+div:first-child a.discard {
+	opacity:100;
+}
+
+div:first-child p {
+	margin-top:50px;
+}
+
+/*
+####################################
+THE CARDS
+####################################
+*/
+
+.two.clubs {background-image:url(images/cards/two_clubs.png);}
+.three.clubs {background-image:url(images/cards/three_clubs.png);}
+.four.clubs {background-image:url(images/cards/four_clubs.png);}
+.five.clubs {background-image:url(images/cards/five_clubs.png);}
+.six.clubs {background-image:url(images/cards/six_clubs.png);}
+.seven.clubs {background-image:url(images/cards/seven_clubs.png);}
+.eight.clubs {background-image:url(images/cards/eight_clubs.png);}
+.nine.clubs {background-image:url(images/cards/nine_clubs.png);}
+.ten.clubs {background-image:url(images/cards/ten_clubs.png);}
+.jack.clubs {background-image:url(images/cards/jack_clubs.png);}
+.queen.clubs {background-image:url(images/cards/queen_clubs.png);}
+.king.clubs {background-image:url(images/cards/king_clubs.png);}
+.ace.clubs {background-image:url(images/cards/ace_clubs.png);}
+
+.two.diamonds{background-image:url(images/cards/two_diamonds.png);}
+.three.diamonds {background-image:url(images/cards/three_diamonds.png);}
+.four.diamonds {background-image:url(images/cards/four_diamonds.png);}
+.five.diamonds {background-image:url(images/cards/five_diamonds.png);}
+.six.diamonds {background-image:url(images/cards/six_diamonds.png);}
+.seven.diamonds {background-image:url(images/cards/seven_diamonds.png);}
+.eight.diamonds {background-image:url(images/cards/eight_diamonds.png);}
+.nine.diamonds {background-image:url(images/cards/nine_diamonds.png);}
+.ten.diamonds {background-image:url(images/cards/ten_diamonds.png);}
+.jack.diamonds {background-image:url(images/cards/jack_diamonds.png);}
+.queen.diamonds {background-image:url(images/cards/queen_diamonds.png);}
+.king.diamonds {background-image:url(images/cards/king_diamonds.png);}
+.ace.diamonds {background-image:url(images/cards/ace_diamonds.png);}
+
+.two.hearts{background-image:url(images/cards/two_hearts.png);}
+.three.hearts {background-image:url(images/cards/three_hearts.png);}
+.four.hearts {background-image:url(images/cards/four_hearts.png);}
+.five.hearts {background-image:url(images/cards/five_hearts.png);}
+.six.hearts {background-image:url(images/cards/six_hearts.png);}
+.seven.hearts {background-image:url(images/cards/seven_hearts.png);}
+.eight.hearts {background-image:url(images/cards/eight_hearts.png);}
+.nine.hearts {background-image:url(images/cards/nine_hearts.png);}
+.ten.hearts {background-image:url(images/cards/ten_hearts.png);}
+.jack.hearts {background-image:url(images/cards/jack_hearts.png);}
+.queen.hearts {background-image:url(images/cards/queen_hearts.png);}
+.king.hearts {background-image:url(images/cards/king_hearts.png);}
+.ace.hearts {background-image:url(images/cards/ace_hearts.png);}
+
+
+
+
+
+
+@keyframes my-animation {
+ from   {left:52px !important; }
+ to    {left:455px !important;  }
+}
+
+@-webkit-keyframes my-animation {
+ from {left:52px; }
+ to    {left:455px;  }
+}
+
+@-webkit-keyframes flipping {
+	0% {
+-webkit-backface-visibility: visible;
+-webkit-transform-origin: 50% 50%;
+-webkit-transform: perspective(500px) rotateY(0deg);
+-moz-backface-visibility: visible;
+-moz-transform-origin: 50% 50%;
+-moz-transform: perspective(500px) rotateY(0deg);
+backface-visibility: visible;
+transform-origin: 50% 50%;
+transform: perspective(500px) rotateY(0deg);
+
+}
+	100% { 
+-webkit-backface-visibility: visible;
+-webkit-transform-origin: 50% 50%;
+-webkit-transform: perspective(500px) rotateY(180deg);
+
+-moz-backface-visibility: visible;
+-moz-transform-origin: 50% 50%;
+-moz-transform: perspective(500px) rotateY(180deg);
+
+}
+
+}
+
+#deck section.wrapper.animate {
+-moz-animation: my-animation 2s;
+-webkit-animation: my-animation 2s;
+animation:my-animation 2s;
+left:455px !important;
+}
+
+#deck section.wrapper.player {
+-webkit-transition:all 2.1s ease .8s; 
+-moz-transition:all 2.1s ease .8s;
+transition:all 2.1s ease .8s;
+}
+
+section.wrapper.player  {
+   top:225px;
+  /* min-height:152px;
+   min-width:120px;
+   float:left; */
+}
+
+#deck section.wrapper.comp_player {
+-webkit-transition:all 2.1s ease .6s; 
+-moz-transition:all 2.1s ease .6s;
+transition:all 2.1s ease .6s;
+}
+
+#player section.wrapper.player.flipchild, #deck section.showdacard.flipit {
+   top:225px;
+   min-height:152px;
+   min-width:120px;
+   float:left;
+}
+
+#player section.wrapper.player.flip.remove_transition_duration {
+}
+
+#player section.wrapper.player.flip > div.flip {
+}
+
+#player section.wrapper.player.flipchild > div.back.flip, #deck section.showdacard.flipit  > div.back  {
+ -webkit-transform: rotateY(-180deg);
+  transform: rotateY(-180deg); 
+  z-index: 1;
+}
+
+#player section.wrapper.player.flipchild > div:first-child, #deck section.showdacard.flipit > div:first-child   {
+  -webkit-transform: rotateY(-360deg);
+  -moz-transform: rotateY(-360deg);
+  -o-transform: rotateY(-360deg);
+  -ms-transform: rotateY(-360deg);
+  transform: rotateY(-360deg); 
+  z-index: 5;
+}
+
+
+.ui-state-hover {
+background:lightyellow;   
+}
+.ui-state-active {
+background:lightgray   
+}
