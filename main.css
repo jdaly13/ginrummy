@@ -38,6 +38,7 @@ article {
 position:absolute;
 left:2%;
 top:0px;
+z-index:100;
 
 }
 
@@ -141,6 +142,12 @@ div:first-child a {
 	font-family:arial;
 	color:#999999;
 	text-decoration:none;
+	cursor:default;
+}
+
+div.taketopCard a {
+	opacity:100;
+	cursor:pointer;
 }
 
 div:first-child a.discard {
@@ -255,6 +262,7 @@ transition:all 2.1s ease .8s;
 
 section.wrapper.player  {
    top:225px;
+   cursor:move;
   /* min-height:152px;
    min-width:120px;
    float:left; */
@@ -266,11 +274,17 @@ section.wrapper.player  {
 transition:all 2.1s ease .6s;
 }
 
-#player section.wrapper.player.flipchild, #deck section.showdacard.flipit {
+#player section.wrapper.player.flipchild {
    top:225px;
    min-height:152px;
    min-width:120px;
    float:left;
+   margin-left:-25px;
+   /*transition-duration:2s; */
+}
+
+#player section.wrapper.player.flipchild:first-child {
+    margin-left:51px;
 }
 
 #player section.wrapper.player.flip.remove_transition_duration {
@@ -279,13 +293,13 @@ transition:all 2.1s ease .6s;
 #player section.wrapper.player.flip > div.flip {
 }
 
-#player section.wrapper.player.flipchild > div.back.flip, #deck section.showdacard.flipit  > div.back  {
+ section.wrapper.player.flipchild > div.back.flip, #deck section.showdacard.flipit  > div.back  {
  -webkit-transform: rotateY(-180deg);
   transform: rotateY(-180deg); 
   z-index: 1;
 }
 
-#player section.wrapper.player.flipchild > div:first-child, #deck section.showdacard.flipit > div:first-child   {
+section.wrapper.player.flipchild > div:first-child, #deck section.showdacard.flipit > div:first-child   {
   -webkit-transform: rotateY(-360deg);
   -moz-transform: rotateY(-360deg);
   -o-transform: rotateY(-360deg);
