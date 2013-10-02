@@ -33,11 +33,11 @@ var whole_deck = [];
 var card_value = {};
 var second_key ='';
 var suit_object = '';
-GAME.takeCard = "take";
-GAME.discard = "discard";
+RUMMY.takeCard = "take";
+RUMMY.discard = "discard";
 
 
-GAME.createarrayofcards = function (callcreatehtmldeck){
+RUMMY.createarrayofcards = function (callcreatehtmldeck){
 	whole_deck = [];
 	for (key in deckofcards) {
 		suit_object = deckofcards[key]; // {hearts, diamonds, clubs, spades }
@@ -50,13 +50,13 @@ GAME.createarrayofcards = function (callcreatehtmldeck){
 	whole_deck = whole_deck.sort(function() {return 0.5 - Math.random()})
 	if (callcreatehtmldeck === true) {
 		
-		GAME.fillinmaincontent();
-		GAME.loopthroughdiv();
-		GAME.events.dealcards();
+		RUMMY.fillinmaincontent();
+		RUMMY.loopthroughdiv();
+		RUMMY.events.dealcards();
     }
 }
 
-GAME.createhtmlDeck = function (whole_deck) {
+RUMMY.createhtmlDeck = function (whole_deck) {
     each_suit = each_suit.sort(function() {return 0.5 - Math.random()})
     var html = '<section id="deck">';
     var eachsuitlength = each_suit.length;
@@ -72,7 +72,7 @@ GAME.createhtmlDeck = function (whole_deck) {
     return html;
 }
 
-GAME.fillinmaincontent = function() {
+RUMMY.fillinmaincontent = function() {
 	var main_content = document.getElementById('main_content');
 	main_content.innerHTML = this.createhtmlDeck(whole_deck); // creates the deck
 	var buttons = '<article><button id="deal">dealcards</button> <button disabled id="reshuffle">reshuffle</button> </article>'; 
@@ -80,7 +80,7 @@ GAME.fillinmaincontent = function() {
 }
 
 
-GAME.loopthroughdiv = function () {
+RUMMY.loopthroughdiv = function () {
 	var html_text;
 	var html_text_num;
 	$('#deck div').not('.back').each(function (i) { 
@@ -91,13 +91,13 @@ GAME.loopthroughdiv = function () {
 		$(this).parent().css({top:1+i, left:1+i, zIndex: 1+i});
 		$(this).html(function() {
 			var last = space.pop();
-			var new_html = "<p>" + space.join(" ") + "</p><a href='#'>" + GAME.discard + "</a><span>"+last+"</span>";
+			var new_html = "<p>" + space.join(" ") + "</p><a href='#'>" + RUMMY.discard + "</a><span>"+last+"</span>";
 			return new_html;
 		});
 	});
 }
 
-GAME.events =  {
+RUMMY.events =  {
 	dealcards: function () {
 		var deal = document.getElementById('deal');
 		$(deal).click(function () {
@@ -115,8 +115,8 @@ GAME.events =  {
      
 				if (i < 32) {              
 				
-				GAME.events.flipCards('player', $('#deck .player'));
-				GAME.events.flipCards('comp', $('#deck .comp_player'))
+				RUMMY.events.flipCards('player', $('#deck .player'));
+				RUMMY.events.flipCards('comp', $('#deck .comp_player'))
 				clearInterval(refreshIntervalId)
 				}
 			}, 300) // end setInterval	
@@ -174,7 +174,7 @@ GAME.events =  {
 		$(reshuffle).click(function() {
 			main_content.innerHTML = '';
 			$('#player #area, #comp_player #comp_area').empty().parent().removeAttr('style');
-			GAME.createarrayofcards(true);
+			RUMMY.createarrayofcards(true);
 		})
 	},
 	
@@ -182,7 +182,7 @@ GAME.events =  {
 		var deck = $('#deck').get(0) // get last child fix this 3/29
 		deck = deck.lastElementChild;
 		$(deck).addClass('showdacard').on('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd', function() {
-				$(this).addClass('flipit').children('div').addClass('flipit takeCard').find('a').text(GAME.takeCard);
+				$(this).addClass('flipit').children('div').addClass('flipit takeCard').find('a').text(RUMMY.takeCard);
 		})
 
 		var takeCard = $("<button id='takeCard'>Take from deck</button>");
@@ -220,19 +220,19 @@ GAME.events =  {
 	
 	}
 	
-} // end GAME.events
+} // end RUMMY.events
 
 
 
 	
 $(document).ready(function () {
-	GAME.createarrayofcards();
-	GAME.fillinmaincontent()
-	GAME.loopthroughdiv()
+	RUMMY.createarrayofcards();
+	RUMMY.fillinmaincontent()
+	RUMMY.loopthroughdiv()
 	
 	//events
-	GAME.events.dealcards()
-	GAME.events.reshuffle()
+	RUMMY.events.dealcards()
+	RUMMY.events.reshuffle()
 }); // end document.ready
 
 				
