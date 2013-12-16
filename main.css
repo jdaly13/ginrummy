@@ -1,4 +1,5 @@
 a:hover {text-decoration:none;}
+.hide {display:none !important;}
 button {
 display:block;
 border-radius:3px;
@@ -130,9 +131,8 @@ div:first-child a {
 	opacity:0;
 	position:absolute;
 	bottom:2%;
-	left:1px;
-	padding:5px;
-	transition: opacity 0.5s;
+	right:25%;
+	padding:5px; 
 	font-size:10px;
 	text-transform:uppercase;
 	cursor:pointer;
@@ -145,14 +145,22 @@ div:first-child a {
 	cursor:default;
 }
 
+#deck div:first-child a  {
+    	transition: opacity 0.5s;
+}
+
 div.taketopCard a {
 	opacity:100;
 	cursor:pointer;
 }
 
-div:first-child a.discard {
+#player div:first-child a.discard {
 	opacity:100;
+        cursor: pointer;
+        transition: opacity 0s;
 }
+
+
 
 div:first-child p {
 	margin-top:50px;
@@ -262,10 +270,14 @@ transition:all 2.1s ease .8s;
 
 section.wrapper.player  {
    top:225px;
-   cursor:move;
+   
   /* min-height:152px;
    min-width:120px;
    float:left; */
+}
+
+#player section.wrapper.player {
+    cursor:move;
 }
 
 #deck section.wrapper.comp_player {
@@ -299,7 +311,9 @@ transition:all 2.1s ease .6s;
   z-index: 1;
 }
 
-section.wrapper.player.flipchild > div:first-child, #deck section.showdacard.flipit > div:first-child   {
+section.wrapper.player.flipchild > div:first-child, 
+#deck section.showdacard.flipit > div:first-child,
+#deck section.comp_player.flipit > div:first-child {
   -webkit-transform: rotateY(-360deg);
   -moz-transform: rotateY(-360deg);
   -o-transform: rotateY(-360deg);
