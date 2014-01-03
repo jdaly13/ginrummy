@@ -196,12 +196,14 @@ RUMMY.events =  {
         if (which_one === "top_card") {
             setTimeout(function () {                         
                 var flag = true;
-                $object.removeStyle('top').addClass('player temp').css({'-webkit-transform': 'translateX(-50px)','transform':'translateX(-50px)' }).on('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd', function() { 
-                        $object.removeClass('showdacard flipit temp').addClass('flipchild').prependTo('#player #area').removeAttr('style');
-                        if (flag) {
-                            that.playerHover($object, 'one');
-                        }
-                        flag = false;
+                var currentCard = $object.offset().left;
+                var currentDeck = $('#area section:first-child').offset().left;
+                var whereToGo = (currentDeck - currentCard) -50;
+                whereToGo = ($object.hasClass('showdacard')) ? -49 : whereToGo;
+                $object.removeStyle('top').addClass('player temp').css({'-webkit-transform': 'translateX('+whereToGo+'px)','transform':'translateX('+whereToGo+'px)' })
+                .one('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd', function() { 
+                       $object.removeClass('showdacard flipit temp').addClass('flipchild').prependTo('#player #area').removeAttr('style');
+                       that.playerHover($object, 'one');
                 });
             }, 50)
 
@@ -238,17 +240,16 @@ RUMMY.events =  {
             var that = this;
             var $takeCard = $('#takeCard');
             $(deckLastChild).removeStyle('left').addClass('showdacard delt').on('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd', function() {      
-                $(this).addClass('flipit').children('div').addClass('flipit taketopCard').on('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd', function() {                    
+                $(this).addClass('flipit').children('div').addClass('flipit taketopCard ').on('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd', function() {                    
                     $takeCard.removeClass('hide');
                     $(this).find('a').text(RUMMY.takeCard).addClass('take');                    
                 }); 
                 
             });
-            that.takeNextCard($(deckLastChild), $takeCard);
+            that.takeNextCard($('#deck'), $takeCard, $(deckLastChild));
     },
 	
     playerHover: function (obj) {
-            var runOnce = true;
             var $objPlusSiblings = obj.siblings().addBack();
             var howManyCards = obj.siblings().length;
             var that = this;
@@ -277,11 +278,9 @@ RUMMY.events =  {
             var that = this;
             $discard.removeClass('discard');
             var $siblings = $obj.siblings();
-            $siblings.find('a').removeClass('discard');
+            $siblings.find('a').removeClass('discard').parent().removeClass('taketopCard')
             var $lastChild = $('#deck').children(':last-child');
-            console.log($lastChild);
             var lastChildPosition = $lastChild.position().left;
-            console.log(lastChildPosition)
             var lastChildzIndex = parseInt($lastChild.css('z-index'));           
             if ($lastChild.hasClass('showdacard') || $lastChild.hasClass('player') || $lastChild.hasClass('comp_player')  ) {
                 $obj.appendTo('#deck').css({'z-index':lastChildzIndex +1, "left":lastChildPosition +23, "top":'32px'}).addClass('delt')
@@ -296,30 +295,27 @@ RUMMY.events =  {
             
     },
 	
-    takeNextCard: function (deckLastChild, takefromdeckbutton) {
+    takeNextCard: function ($deck, takefromdeckbutton, $lastChild) {
         var that = this;
         takefromdeckbutton.on('click', function (ev) {
                 this.disabled = true;
-                var $topFromDeck = deckLastChild.parent().find('.delt:first').prev() || deckLastChild.prev();
-                var flag = true;
+                var $topFromDeck = $deck.find('.delt:first').prev() || $deck.find(':last-child').prev();
                 $topFromDeck.addClass('player temp').css({'-webkit-transform': 'translateX(-50px)','transform':'translateX(-50px)' })
                 .removeStyle('top')
                 .one('transitionend webkitTransitionEnd', function (event) {
-                      //  if (flag){
-                            that.flipCards('new_card', $(this));
-                     //   }
-                    //    flag = false;
+                     that.flipCards('new_card', $(this));
                 });
-                deckLastChild.find('a').removeClass('take').addClass('hide')
+              //  $lastChild.find('a').removeClass('take').addClass('hide')
                 //deck.prev().removeAttr('style').addClass('player flipchild remove_transition_duration').prependTo('#area');
                 //that.playerHover(deck); // fix paramter not deck but obj
         });
 
-        deckLastChild.on('click', 'a.take', function (event){
+        $('#deck').on('click', 'a.take', function (event){
                 var takebutton = takefromdeckbutton.get(0);
                 takebutton.disabled = true;
-                $(this).removeClass('take').addClass('hide');
-                that.flipCards('top_card', $(event.delegateTarget));
+                $(this).removeClass('take').text(RUMMY.discard)
+		var $parent = $(this).parents('section.wrapper');
+                that.flipCards('top_card', $parent);
                 event.preventDefault();
         });
     }
@@ -331,8 +327,8 @@ RUMMY.computerPlayer.events = {
          var suitNCardArray = [];
          var computerDeck = [];
          $obj.children(':first-child').each(function(i, element) {                  
-                    suit_card_n_value = $(this).attr('class');// + ' ' + $(this).attr('data-value');
-                    value = suit_card_n_value.slice(suit_card_n_value.indexOf(' ')+1, suit_card_n_value.length )
+                 var suit_card_n_value = $(this).attr('class');// + ' ' + $(this).attr('data-value');
+                 var value = suit_card_n_value.slice(suit_card_n_value.indexOf(' ')+1, suit_card_n_value.length )
                     computerDeck.push(value);
                     suitNCardArray.push(suit_card_n_value);
          });
@@ -342,20 +338,65 @@ RUMMY.computerPlayer.events = {
     createNewArray: function (array, withSuit) {
         var firstPart = this.removeDuplicates(array);
         var whichIndex = this.findTheHighCards(firstPart);
-       
-       var cardToDiscard = RUMMY.computerPlayer.cardToDiscard = firstPart[whichIndex];
-       var $obj = this.findCardtoDiscard(cardToDiscard);
-       var $parent = $obj.parent();
+        var arrOfArrays = this.makeArrayofArrays(withSuit);
+        var filterOutArrayOfArraysObj = this.furtherFilter(arrOfArrays);
+        var getNumber = this.getNumber(filterOutArrayOfArraysObj)
+        var cardToDiscard = RUMMY.computerPlayer.cardToDiscard = firstPart[whichIndex];
+        var $obj = this.findCardtoDiscard(cardToDiscard);
+        var $parent = $obj.parent();
         var cssStyles = RUMMY.computerPlayer.events.getStyles($parent);
         console.log(cssStyles);
         $obj.addClass('taketopCard').find('a').text(RUMMY.takeCard).addClass('take');
         $parent.addClass('flipit');
         RUMMY.events.discard($obj, $parent ,'donotrun');
-        $('#takeCard').removeAttr('disabled');
-        var $last_child = $('#deck').children(':last-child');
-        console.log($last_child);
-      //  RUMMY.events.takeNextCard($last_child, $('#takeCard'))
-       
+        $('#takeCard').removeAttr('disabled');     
+    },
+    
+    getNumber: function (obj) {
+        console.log(obj);
+        for (var j = 0; j < RUMMY.each_suit.length; j++ ) {
+            if (RUMMY.each_suit[j] === "spades") {
+                var spades = []
+                test(j, spades)
+            }            
+        }
+        
+        function test (j, suit) {
+            for(var i = 0; i < obj[RUMMY.each_suit[j]].length; i++) {
+                    console.log(obj[RUMMY.each_suit[j]][i])
+                    console.log(RUMMY.one_suit[obj[RUMMY.each_suit[j]][i]])
+            }
+        }
+    },
+    
+    furtherFilter: function (arr) {
+            var spades = [],
+                hearts = [],
+                diamonds = [],
+                clubs = [];
+            for (i=0; i< arr.length; i++) {
+                for (j=0; j<arr.length; j++) {
+                    if (arr[j][0] === "spades") {
+                        spades.push(arr[j][1])
+                    }
+                    if (arr[j][0] === "hearts") {
+                        hearts.push(arr[j][1])
+                    }
+                    if (arr[j][0] === "diamonds") {
+                        diamonds.push(arr[j][1])
+                    }
+                    if (arr[j][0] === "clubs") {
+                        clubs.push(arr[j][1])
+                    }
+                }
+                break                             
+            }
+            return {
+                spades:spades || null,
+                hearts:hearts || null,
+                diamonds:diamonds || null,
+                clubs:clubs || null
+            };
     },
     
     makeArrayofArrays: function (array) {
@@ -421,12 +462,10 @@ RUMMY.computerPlayer.events = {
        var lastInHandLeftPos = parseInt($('#comp_area').children(':first-child').css('left'));
        var pos = lastInHandLeftPos + 50;
        var $lastInDeck = $deck.find('.delt:first').prev();
-       console.log($lastInDeck);
        $lastInDeck.addClass('comp_player temp').css({'left': pos+'px', 'top': '-185px'}).one('transitionend', function () {
                 $(this).prependTo('#comp_player #comp_area');
                 var $selfAndSiblings = $(this).siblings().andSelf();
-                that.preFilteringOfCreateArray($selfAndSiblings);
-             
+                that.preFilteringOfCreateArray($selfAndSiblings);          
        });
        //RUMMY.events.flipCards('comp', $lastInDeck);
     }
