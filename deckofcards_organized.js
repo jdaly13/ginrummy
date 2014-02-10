@@ -32,7 +32,7 @@ RUMMY.one_suit = {
 	jack:10,
 	queen:10,
 	king:10
-}
+};
 RUMMY.each_suit = ['spades', 'clubs', 'hearts', 'diamonds'];
 RUMMY.takeCard = "take";
 RUMMY.discard = "discard";
@@ -70,7 +70,7 @@ RUMMY.createarrayofcards = function (callcreatehtmldeck){
             RUMMY.loopthroughdiv();
             RUMMY.events.dealcards();
     }
-}
+};
 
 RUMMY.createhtmlDeck = function (wholeDeck) {
     RUMMY.each_suit = RUMMY.each_suit.shuffle(); //shuffle the deck
@@ -88,14 +88,14 @@ RUMMY.createhtmlDeck = function (wholeDeck) {
     }
     html += '</section>';
     return html;
-}
+};
 
 RUMMY.fillinmaincontent = function() {
 	var main_content = document.getElementById('main_content');
 	main_content.innerHTML = this.createhtmlDeck(RUMMY.whole_deck); // creates the deck
 	var buttons = '<article><button id="deal">dealcards</button> <button disabled id="reshuffle">reshuffle</button><button id="takeCard" class="hide">Take from deck</button> </article>'; 
 	$(main_content).append(buttons);
-}
+};
 
 
 RUMMY.loopthroughdiv = function () {
@@ -113,7 +113,7 @@ RUMMY.loopthroughdiv = function () {
                     return new_html;
             });
     });
-}
+};
 
 RUMMY.events =  {
     //this runs only once this is the initial deal!
@@ -127,17 +127,17 @@ RUMMY.events =  {
                     if (i % 2 === 1) {
                             $('#deck').children().eq(i).addClass('player temp').css({'-webkit-transform': 'translateX('+(k-50)+'px)','transform':'translateX('+(k-50)+'px)','zIndex':k+2 }).removeStyle('top');//.removeStyle('z-index') // player one
                             } else {                                
-                        $('#deck').children().eq(i).addClass('comp_player temp').css({left: k-50, 'top': '-185px'}) // computer player
+                        $('#deck').children().eq(i).addClass('comp_player temp').css({left: k-50, 'top': '-185px'}); // computer player
                     }
                     k = 50 + k;
-                    i = i-1
+                    i = i-1;
                     if (i < 32) {     //10 cards each 52-32         
                   //  $('#deck').children('.player').removeStyle('z-index')
                     RUMMY.events.flipNewDeck('player', $('#deck .player'));
                     RUMMY.events.flipNewDeck('comp', $('#deck .comp_player'));
                     clearInterval(refreshIntervalId);
                     }
-            }, 300) // end setInterval	
+            }, 300); // end setInterval	
        }, false);	
     },
     
@@ -147,26 +147,25 @@ RUMMY.events =  {
                 $object.removeClass('temp');
                 setTimeout(function () {
                         var flag = true;
-                        var top_pos = $object.position().top
+                        var top_pos = $object.position().top;
                         top_pos = top_pos; // because of min-height on main content div
-                        var left = $object.parent().offset().left
-                        $('#player').css({position:'relative', top:'-185px', marginLeft:(left)})                      
+                        var left = $object.parent().offset().left;
+                        $('#player').css({position:'relative', top:'-185px', marginLeft:(left)});                      
                         setTimeout(function() {
                             var obj = $object.get().reverse();
                             $object.addClass('flipchild').children('div').addClass('flip').on('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd', function() { 
-                                $(obj).appendTo('#player #area').removeAttr('style')
+                                $(obj).appendTo('#player #area').removeAttr('style');
                                 if (flag) {
                                     that.switchitupyo($object);
                                 }
-                                flag = false;
-                                
+                                flag = false;                               
                             });       	
                         }, 1000);
                 }, 2000);
         } else { //it's computer player
             $object.removeClass('temp');                                        
                 setTimeout(function () {
-                    var top_pos = $object.position().top
+                    var top_pos = $object.position().top;
                     top_pos = top_pos -15; // because of min-height on main content div
                     var left = $object.parent().offset().left;
                     $('#comp_player').css({position:'relative', top:-top_pos, marginLeft:(left)});
@@ -184,12 +183,10 @@ RUMMY.events =  {
                      $object.addClass('flipchild').children('div').addClass('flip').on('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd', function() { 
                         $object.removeClass('temp').prependTo('#player #area').removeAttr('style');
                         if (flag) {
-                            that.playerHover($object, 'one');
-                            
+                            that.playerHover($object, 'one');                          
                         }
-                        flag = false;
-                        
-                      }) 
+                        flag = false;                      
+                      }); 
                    }, 50);                
         }
        
@@ -205,7 +202,7 @@ RUMMY.events =  {
                        $object.removeClass('showdacard flipit temp').addClass('flipchild').prependTo('#player #area').removeAttr('style');
                        that.playerHover($object, 'one');
                 });
-            }, 50)
+            }, 50);
 
         }
     },	//end flipCards
@@ -231,11 +228,11 @@ RUMMY.events =  {
                 main_content.innerHTML = '';
                 $('#player #area, #comp_player #comp_area').empty().parent().removeAttr('style');
                 RUMMY.createarrayofcards(true);
-            }, false)
+            }, false);
     },
 	
     dealfirstcard: function (first) {
-            var deck = $('#deck').get(0) // get last child fix this 3/29
+            var deck = $('#deck').get(0); // get last child fix this 3/29
             var deckLastChild = deck.lastElementChild;
             var that = this;
             var $takeCard = $('#takeCard');
@@ -243,8 +240,7 @@ RUMMY.events =  {
                 $(this).addClass('flipit').children('div').addClass('flipit taketopCard ').on('transitionend webkitTransitionEnd oTransitionEnd otransitionend MSTransitionEnd', function() {                    
                     $takeCard.removeClass('hide');
                     $(this).find('a').text(RUMMY.takeCard).addClass('take');                    
-                }); 
-                
+                });                
             });
             that.takeNextCard($('#deck'), $takeCard, $(deckLastChild));
     },
@@ -278,19 +274,19 @@ RUMMY.events =  {
             var that = this;
             $discard.removeClass('discard');
             var $siblings = $obj.siblings();
-            $siblings.find('a').removeClass('discard').parent().removeClass('taketopCard')
+            $siblings.find('a').removeClass('discard').parent().removeClass('taketopCard');
             var $lastChild = $('#deck').children(':last-child');
             var lastChildPosition = $lastChild.position().left;
             var lastChildzIndex = parseInt($lastChild.css('z-index'));           
             if ($lastChild.hasClass('showdacard') || $lastChild.hasClass('player') || $lastChild.hasClass('comp_player')  ) {
-                $obj.appendTo('#deck').css({'z-index':lastChildzIndex +1, "left":lastChildPosition +23, "top":'32px'}).addClass('delt')
+                $obj.appendTo('#deck').css({'z-index':lastChildzIndex +1, "left":lastChildPosition +23, "top":'32px'}).addClass('delt');
             } else {
-                $obj.appendTo('#deck').css({'z-index':lastChildzIndex +1, "left":'200px', "top":'32px'}).addClass('delt')
+                $obj.appendTo('#deck').css({'z-index':lastChildzIndex +1, "left":'200px', "top":'32px'}).addClass('delt');
             }
-            if (!(arguments[2] === 'donotrun')) {
+            if (arguments[2] !== 'donotrun') {
                 setTimeout(function () {
                     RUMMY.computerPlayer.events.takeNextCard();
-                }, 1000)
+                }, 1000);
             }
             
     },
@@ -313,14 +309,14 @@ RUMMY.events =  {
         $('#deck').on('click', 'a.take', function (event){
                 var takebutton = takefromdeckbutton.get(0);
                 takebutton.disabled = true;
-                $(this).removeClass('take').text(RUMMY.discard)
+                $(this).removeClass('take').text(RUMMY.discard);
 		var $parent = $(this).parents('section.wrapper');
                 that.flipCards('top_card', $parent);
                 event.preventDefault();
         });
     }
 	
-} // end RUMMY.events
+}; // end RUMMY.events
 
 RUMMY.computerPlayer.events = {
     preFilteringOfCreateArray: function ($obj) {
@@ -328,7 +324,7 @@ RUMMY.computerPlayer.events = {
          var computerDeck = [];
          $obj.children(':first-child').each(function(i, element) {                  
                  var suit_card_n_value = $(this).attr('class');// + ' ' + $(this).attr('data-value');
-                 var value = suit_card_n_value.slice(suit_card_n_value.indexOf(' ')+1, suit_card_n_value.length )
+                 var value = suit_card_n_value.slice(suit_card_n_value.indexOf(' ')+1, suit_card_n_value.length );
                     computerDeck.push(value);
                     suitNCardArray.push(suit_card_n_value);
          });
@@ -340,32 +336,49 @@ RUMMY.computerPlayer.events = {
         var whichIndex = this.findTheHighCards(firstPart);
         var arrOfArrays = this.makeArrayofArrays(withSuit);
         var filterOutArrayOfArraysObj = this.furtherFilter(arrOfArrays);
-        var getNumber = this.getNumber(filterOutArrayOfArraysObj)
+        var getNumber = this.getNumber(filterOutArrayOfArraysObj);
         var cardToDiscard = RUMMY.computerPlayer.cardToDiscard = firstPart[whichIndex];
         var $obj = this.findCardtoDiscard(cardToDiscard);
         var $parent = $obj.parent();
-        var cssStyles = RUMMY.computerPlayer.events.getStyles($parent);
-        console.log(cssStyles);
+        var parentInfoObj = this.getStyles($parent);
+        this.moveParents(parentInfoObj, $parent.parent(), $parent.prev())
         $obj.addClass('taketopCard').find('a').text(RUMMY.takeCard).addClass('take');
         $parent.addClass('flipit');
         RUMMY.events.discard($obj, $parent ,'donotrun');
         $('#takeCard').removeAttr('disabled');     
     },
     
+    moveParents: function (infoObj, $compArea, $prev) {
+        var left = infoObj.left - 100;
+        console.log(infoObj);
+        console.log($prev);
+       if (infoObj.index != 0) setTimeout(function () {$next.css('left',left )}, 2000);
+        
+         //.next().css('left', left);     
+    },
+    
     getNumber: function (obj) {
         console.log(obj);
         for (var j = 0; j < RUMMY.each_suit.length; j++ ) {
             if (RUMMY.each_suit[j] === "spades") {
-                var spades = []
-                test(j, spades)
+                var spades = [];
+                var numberedArray = actualNumbers(j, spades);
+                findConsecutive(numberedArray);
+                console.log(numberedArray);
             }            
         }
         
-        function test (j, suit) {
+        function actualNumbers (j, suit) {
             for(var i = 0; i < obj[RUMMY.each_suit[j]].length; i++) {
-                    console.log(obj[RUMMY.each_suit[j]][i])
-                    console.log(RUMMY.one_suit[obj[RUMMY.each_suit[j]][i]])
+                    console.log(obj[RUMMY.each_suit[j]][i]);
+                    console.log(RUMMY.one_suit[obj[RUMMY.each_suit[j]][i]]);
+                    suit.push(RUMMY.one_suit[obj[RUMMY.each_suit[j]][i]]);
             }
+            return suit;
+        }
+        
+        function findConsecutive(array) {
+                //for statement
         }
     },
     
@@ -373,23 +386,25 @@ RUMMY.computerPlayer.events = {
             var spades = [],
                 hearts = [],
                 diamonds = [],
-                clubs = [];
+                clubs = [],
+                i,
+                j;
             for (i=0; i< arr.length; i++) {
                 for (j=0; j<arr.length; j++) {
                     if (arr[j][0] === "spades") {
-                        spades.push(arr[j][1])
+                        spades.push(arr[j][1]);
                     }
                     if (arr[j][0] === "hearts") {
-                        hearts.push(arr[j][1])
+                        hearts.push(arr[j][1]);
                     }
                     if (arr[j][0] === "diamonds") {
-                        diamonds.push(arr[j][1])
+                        diamonds.push(arr[j][1]);
                     }
                     if (arr[j][0] === "clubs") {
-                        clubs.push(arr[j][1])
+                        clubs.push(arr[j][1]);
                     }
                 }
-                break                             
+                break;                             
             }
             return {
                 spades:spades || null,
@@ -404,7 +419,7 @@ RUMMY.computerPlayer.events = {
         var another = [];
         var i;
         var cardFace = [];
-        var compDeck = array
+        var compDeck = array;
         for (i=0, length = compDeck.length; i < length; i++) {
                 another = compDeck[i].split(' ');
                 compDeck[i] = another;
@@ -424,13 +439,14 @@ RUMMY.computerPlayer.events = {
             var item = arr[i];
             counts[item] = (counts[item] || 0)+1;
         }
-        var arr = [];
-        for(item in counts) {
-            if(counts[item] === 1) {
-                arr.push(item);
+        var array = [],
+        items;
+        for(items in counts) {
+            if(counts[items] === 1) {
+                array.push(items);
             }
         }
-        return arr;
+        return array;
     },
     
     
@@ -440,8 +456,7 @@ RUMMY.computerPlayer.events = {
                 return i;
             }
         }
-        return Math.floor(Math.random() * (arr.length - 0 + 1) + 0);
-        
+        return Math.floor(Math.random() * (arr.length - 0 + 1) + 0);       
     },
     
     findCardtoDiscard: function (eleClass) {
@@ -449,10 +464,11 @@ RUMMY.computerPlayer.events = {
     },
     
     getStyles: function ($ele) {
-        var obj = {}
+        var obj = {};
         obj.top = $ele.css('top');
         obj.left = $ele.css('left');
         obj.zIndex = $ele.css('zIndex');
+        obj.index = $ele.index();
         return obj;
     },
     
@@ -472,19 +488,21 @@ RUMMY.computerPlayer.events = {
     
     
     
-}
+}; //end computer player events object
 
 //RUMMY.computerPlayer.events.createNewArray
 	
 $(document).ready(function () {
 	RUMMY.createarrayofcards();
-	RUMMY.fillinmaincontent()
-	RUMMY.loopthroughdiv()
+	RUMMY.fillinmaincontent();
+	RUMMY.loopthroughdiv();
 	
 	//events
-	RUMMY.events.dealcards()
-	RUMMY.events.reshuffle()
+	RUMMY.events.dealcards();
+	RUMMY.events.reshuffle();
 }); // end document.ready
+
+
 
 				
 
