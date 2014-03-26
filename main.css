@@ -1,5 +1,6 @@
 a:hover {text-decoration:none;}
 .hide {display:none !important;}
+#area .hide {display:inline-block !important}
 button {
 display:block;
 border-radius:3px;
@@ -86,12 +87,25 @@ section.wrapper > div:first-child {
   background-color:white;
 }
 
+@keyframes animatedBackground {
+	from { background-position: 0 0; }
+	to { background-position: 100% 0; }
+}
+
 section.wrapper  > div.back {
 	z-index:4;
 	background-image:url(images/card_background.png);
-	background-repeat:no-repeat;
+	background-repeat:no-repeat; 
+      /*  background-image:url(images/cityskyline.png);
+        background-position:-320px 0px;
+	background-repeat: repeat-x;*/
+
+
 }
 
+section.wrapper  > div.back:hover {
+     /*  animation: animatedBackground 20s linear infinite */
+}
 
 #player {
 	position:absolute;
@@ -131,7 +145,7 @@ div:first-child a {
 	opacity:0;
 	position:absolute;
 	bottom:2%;
-	right:25%;
+	right:50%;
 	padding:5px; 
 	font-size:10px;
 	text-transform:uppercase;
@@ -152,6 +166,10 @@ div:first-child a {
 div.taketopCard a {
 	opacity:100;
 	cursor:pointer;
+}
+
+#area div.taketopCard a {
+    
 }
 
 #player div:first-child a.discard {
@@ -213,6 +231,20 @@ THE CARDS
 .queen.hearts {background-image:url(images/cards/queen_hearts.png);}
 .king.hearts {background-image:url(images/cards/king_hearts.png);}
 .ace.hearts {background-image:url(images/cards/ace_hearts.png);}
+
+.two.spades{background-image:url(images/cards/two_spades.png);}
+.three.spades {background-image:url(images/cards/three_spades.png);}
+.four.spades {background-image:url(images/cards/four_spades.png);}
+.five.spades {background-image:url(images/cards/five_spades.png);}
+.six.spades {background-image:url(images/cards/six_spades.png);}
+.seven.spades {background-image:url(images/cards/seven_spades.png);}
+.eight.spades {background-image:url(images/cards/eight_spades.png);}
+.nine.spades {background-image:url(images/cards/nine_spades.png);}
+.ten.spades {background-image:url(images/cards/ten_spades.png);}
+.jack.spades {background-image:url(images/cards/jack_spades.png);}
+.queen.spades {background-image:url(images/cards/queen_spades.png);}
+.king.spades {background-image:url(images/cards/king_spades.png);}
+.ace.spades {background-image:url(images/cards/ace_spades.png);}
 
 
 
@@ -329,3 +361,81 @@ background:lightyellow;
 .ui-state-active {
 background:lightgray   
 }
+
+
+/* START OF OVERLAY */
+/* Overlay style */
+.overlay {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	background: rgba(228,43,43,0.9);
+        z-index: 1000;
+}
+
+/* Overlay closing cross */
+.overlay .overlay-close {
+	width: 80px;
+	height: 80px;
+	position: absolute;
+	right: 20px;
+	top: 20px;
+	overflow: hidden;
+	border: none;
+	background: url(images/cross.png) no-repeat center center;
+	text-indent: 200%;
+	color: transparent;
+	outline: none;
+	z-index: 100;
+}
+
+/* Effects */
+.overlay-door {
+	visibility: hidden;
+	width: 0;
+	left: 50%;
+	-webkit-transform: translateX(-50%);
+	transform: translateX(-50%);
+	-webkit-transition: width 0.5s 0.3s, visibility 0s 0.8s;
+	transition: width 0.7s 0.3s, visibility 0s 0.9s;
+}
+
+.overlay-door.open {
+	visibility: visible;
+	width: 100%;
+	-webkit-transition: width 0.5s;
+	transition: width 0.5s;
+}
+
+
+.overlay-door nav,
+.overlay-door .overlay-close {
+	opacity: 0;
+	-webkit-transition: opacity 0.5s 0.5s;
+	transition: opacity 0.5s 0.5s;
+}
+
+.overlay-door.open nav,
+.overlay-door.open .overlay-close {
+	opacity: 1;
+	-webkit-transition-delay: 0.5s;
+	transition-delay: 0.5s;
+}
+
+.overlay-door.close nav,
+.overlay-door.close .overlay-close {
+	-webkit-transition-delay: 0s;
+	transition-delay: 0s;
+}
+
+#trigger-overlay {
+    display:block;
+    position:absolute;
+    top:2%;
+    left:2%;
+    text-decoration: none;
+    font-weight:bold;
+}
+
