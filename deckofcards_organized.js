@@ -65,19 +65,34 @@ RUMMY.one_suit = {
 	queen:10,
 	king:10
 };
+RUMMY.cardValues = {
+        "ace": 1,
+	"two": 2,
+	"three": 3,
+	"four": 4,
+	"five": 5,
+	"six": 6,
+	"seven": 7,
+	"eight" : 8,
+	"nine" : 9,
+	"ten" : 10,
+	"jack" : 11,
+	"queen" : 12,
+	"king" : 13
+}
 RUMMY.each_suit = ['spades', 'clubs', 'hearts', 'diamonds'];
 RUMMY.takeCard = "take";
 RUMMY.discard = "discard";
 RUMMY.playHoverCalled = false;
-RUMMY.deckofcards = (function () {
+RUMMY.deckofcards = (function (obj) {
     var deck = {},
         i,
         len;
-    for (i=0, len = RUMMY.each_suit.length; i < len; i++) {
-	deck[RUMMY.each_suit[i]] = Object.create(RUMMY.one_suit);
+    for (i=0, len = obj.each_suit.length; i < len; i++) {
+	deck[obj.each_suit[i]] = Object.create(obj.one_suit);
     }
     return deck;
-}()); // returns object
+}(RUMMY || {})); // returns object
 
 RUMMY.computerPlayer = {};
 RUMMY.computerPlayer.deck = [];
@@ -126,8 +141,9 @@ RUMMY.createhtmlDeck = function (wholeDeck) {
 RUMMY.fillinmaincontent = function() {
 	var main_content = document.getElementById('main_content');
 	main_content.innerHTML = this.createhtmlDeck(RUMMY.whole_deck); // creates the deck
-	var buttons = '<article><button id="deal">dealcards</button> <button disabled id="reshuffle">reshuffle</button><button id="takeCard" class="hide">Take from deck</button> </article>'; 
+	var buttons = '<article><button id="deal">dealcards</button> <button disabled id="reshuffle">reshuffle</button><button id="takeCard" class="hide">Take from deck</button> <button id="knock" class="hide">Knock</button> </article>'; 
 	$(main_content).append(buttons);
+        this.helpfulHints('first');
 };
 
 
@@ -151,10 +167,12 @@ RUMMY.loopthroughdiv = function () {
 RUMMY.events =  {
     //this runs only once this is the initial deal!
     dealcards: function () {
+      var that = this;
       var deal = document.getElementById('deal');
       deal.addEventListener('click', function () {
             var k = 1; var i = 52;
-            this.disabled = true;
+            RUMMY.helpfulHints()
+            this.className += ' hide';
             //check these values on second call of deal cards  and k as well console log those bitches
             var refreshIntervalId = setInterval(function() {                     
                     if (i % 2 === 1) {
@@ -166,8 +184,8 @@ RUMMY.events =  {
                     i = i-1;
                     if (i < 32) {     //10 cards each 52-32         
                   //  $('#deck').children('.player').removeStyle('z-index')
-                    RUMMY.events.flipNewDeck('player', $('#deck .player'));
-                    RUMMY.events.flipNewDeck('comp', $('#deck .comp_player'));
+                    that.flipNewDeck('player', $('#deck .player'));
+                    that.flipNewDeck('comp', $('#deck .comp_player'));
                     clearInterval(refreshIntervalId);
                     }
             }, 300); // end setInterval	
@@ -265,17 +283,20 @@ RUMMY.events =  {
     },
 	
     dealfirstcard: function (first) {
-            var deck = $('#deck').get(0); // get last child fix this 3/29
+            var $deck = $('#deck')
+            var deck = $deck.get(0); // get last child fix this 3/29
             var deckLastChild = deck.lastElementChild;
             var that = this;
             var $takeCard = $('#takeCard');
+            var $knockCard = $('#knock')
             $(deckLastChild).removeStyle('left').addClass('showdacard delt').on(transitionEndEvent, function() {      
                 $(this).addClass('flipit').children('div').addClass('flipit taketopCard ').on(transitionEndEvent, function() {                    
-                    $takeCard.removeClass('hide');
+                    $takeCard.removeClass('hide').next().removeClass('hide').attr('disabled', true)
                     $(this).find('a').text(RUMMY.takeCard).addClass('take');                    
                 });                
             });
-            that.takeNextCard($('#deck'), $takeCard, $(deckLastChild));
+            that.takeNextCard($deck, $takeCard, $(deckLastChild));
+            RUMMY.helpfulHints('second');
     },
 	
     playerHover: function (obj) {
@@ -299,6 +320,7 @@ RUMMY.events =  {
          $container.on('click', 'a.discard', function (event) {
                     var $section = $(this).parents('section.player');
                     that.discard($(this), $section);
+                    RUMMY.helpfulHints();
                     event.preventDefault();
          });
     },
@@ -325,14 +347,22 @@ RUMMY.events =  {
     },
 	
     takeNextCard: function ($deck, takefromdeckbutton, $lastChild) {
-        var that = this;
+        var that = this,
+            flag = true,
+            removeHelpfulHints = function () {
+                RUMMY.helpfulHints('third');               
+            };
+        
         takefromdeckbutton.on('click', function (ev) {
                 this.disabled = true;
+                this.nextElementSibling.disabled = false;
                 var $topFromDeck = $deck.find('.delt:first').prev() || $deck.find(':last-child').prev();
                 $topFromDeck.addClass('player temp').css({'-webkit-transform': 'translateX(-50px)','transform':'translateX(-50px)' })
                 .removeStyle('top')
                 .one(transitionEndEvent, function (event) {
                      that.flipCards('new_card', $(this));
+                     if (flag) removeHelpfulHints();
+                     flag = false;
                 });
               //  $lastChild.find('a').removeClass('take').addClass('hide')
                 //deck.prev().removeAttr('style').addClass('player flipchild remove_transition_duration').prependTo('#area');
@@ -342,9 +372,12 @@ RUMMY.events =  {
         $('#deck').on('click', 'a.take', function (event){
                 var takebutton = takefromdeckbutton.get(0);
                 takebutton.disabled = true;
+                takebutton.nextElementSibling.disabled = false;
                 $(this).removeClass('take').text(RUMMY.discard);
 		var $parent = $(this).parents('section.wrapper');
                 that.flipCards('top_card', $parent);
+                 if (flag) removeHelpfulHints();
+                 flag = false;
                 event.preventDefault();
         });
     }
@@ -365,12 +398,24 @@ RUMMY.computerPlayer.events = {
     },
     
     createNewArray: function (array, withSuit) {
+        console.log(array);
         var firstPart = this.removeDuplicates(array);
-        var whichIndex = this.findTheHighCards(firstPart);
+        console.log(firstPart);
+        var whichIndex = this.findTheHighCards(firstPart[0]);
         var arrOfArrays = this.makeArrayofArrays(withSuit);
+        //var testingNewIdea = this.firstFilteringOut(firstPart,arrOfArrays )
+        console.log(arrOfArrays);
         var filterOutArrayOfArraysObj = this.furtherFilter(arrOfArrays);
+        var anotherObj = this.originalFilter(filterOutArrayOfArraysObj);
+        console.log(anotherObj);
+        var sortedObjects = this.decideWhichOnesToKeep(anotherObj);
+        console.log(sortedObjects);
+        var matches = this.findMatches(sortedObjects);
+        console.log(matches);
+        
         var getNumber = this.getNumber(filterOutArrayOfArraysObj);
-        var cardToDiscard = RUMMY.computerPlayer.cardToDiscard = firstPart[whichIndex];
+        var cardToDiscard = RUMMY.computerPlayer.cardToDiscard = firstPart[0][whichIndex];
+        //console.log(cardToDiscard);
         var $obj = this.findCardtoDiscard(cardToDiscard);
         var $parent = $obj.parent();
         RUMMY.computerPlayer.parentInfoObj = this.getStyles($parent);
@@ -378,7 +423,7 @@ RUMMY.computerPlayer.events = {
         $obj.addClass('taketopCard').find('a').text(RUMMY.takeCard).addClass('take');
         $parent.addClass('flipit');
         RUMMY.events.discard($obj, $parent ,'donotrun');
-        $('#takeCard').removeAttr('disabled');     
+        $('#takeCard').removeAttr('disabled').next('#knock').attr('disabled', true);     
     },
     
     moveParents: function (infoObj, $compArea, $prev) {
@@ -391,7 +436,6 @@ RUMMY.computerPlayer.events = {
     },
     
     getNumber: function (obj) {
-        console.log(obj);
         for (var j = 0; j < RUMMY.each_suit.length; j++ ) {
             if (RUMMY.each_suit[j] === "spades") {
                 var spades = [];
@@ -413,6 +457,219 @@ RUMMY.computerPlayer.events = {
         function findConsecutive(array) {
                 //for statement
         }
+    },
+    
+    originalFilter: function (object) {
+        var prop;
+        var i;
+        var clubs = [];
+        var spades = [];
+        var diamonds = [];
+        var hearts = [];
+        var obj = {};
+        
+        for (prop in object) {
+            for (i=0; i<object[prop].length; i++) {
+                    var data = testFunction(object[prop][i]);
+                    if (prop === 'clubs') {			
+                            clubs[i] = data;
+                    }
+
+                    if (prop === 'spades') {
+                            spades[i] = data;
+                    }
+
+                    if (prop === 'diamonds') {
+                            diamonds[i] = data;
+                    }
+
+                    if (prop === 'hearts') {
+                            hearts[i] = data;
+                    }
+            }
+        }
+        
+        function loopEm () {         
+            for (var j=0; j<arguments.length; j++) {
+                for (var k = 0; k < arguments[j].length; k++) {                  
+                    if (arguments[j].length >= 1) {
+                        arguments[j].sort(function(a,b){return a-b});
+                    }
+                }
+            }
+            
+            obj.clubs = arguments[0];
+            obj.spades = arguments[1];
+            obj.diamonds = arguments[2];
+            obj.hearts = arguments[3];
+            
+            return obj;
+        }
+        
+        return loopEm(clubs, spades, diamonds, hearts);
+        
+        function testFunction (value) {
+	 return getValues(value);
+        }
+
+
+        function getValues (string) {
+            var prop;
+            for (prop in RUMMY.cardValues) {
+                if (prop == string) {
+                   return RUMMY.cardValues[prop];
+                }
+            }
+           // return false;
+
+        }
+    },
+    
+    
+    decideWhichOnesToKeep: function (obj) {
+        var keepTheseOnes = {};
+        var maybes = {};
+        var possibleDiscard = {};
+  
+        for (var prop in obj) {
+                keepTheseOnes[prop] = [];
+                maybes[prop] = [];
+                possibleDiscard[prop] = [];
+                for (var i=0; i < obj[prop].length; i++) {
+                    if ((obj[prop][i+1]  === obj[prop][i] +1) && (obj[prop][i+2] === obj[prop][i] +2) && (obj[prop][i+3] === obj[prop][i] +3) && (obj[prop][i+4] === obj[prop][i] +4) && (obj[prop][i+5] === obj[prop][i] +5)) {
+                                               keepTheseOnes[prop].push(obj[prop][i], obj[prop][i] +1, obj[prop][i] +2, obj[prop][i] +3, obj[prop][i] +4, obj[prop][i] +5);
+                                               i=i+5;
+                    } else if ((obj[prop][i+1]  === obj[prop][i] +1) && (obj[prop][i+2] === obj[prop][i] +2) && (obj[prop][i+3] === obj[prop][i] +3) && (obj[prop][i+4] === obj[prop][i] +4)) {
+                                               keepTheseOnes[prop].push(obj[prop][i], obj[prop][i] +1, obj[prop][i] +2, obj[prop][i] +3, obj[prop][i] +4);
+                                               i=i+4;
+                    } else if ((obj[prop][i+1]  === obj[prop][i] +1) && (obj[prop][i+2] === obj[prop][i] +2) && (obj[prop][i+3] === obj[prop][i] +3)) {
+                                               keepTheseOnes[prop].push(obj[prop][i], obj[prop][i] +1, obj[prop][i] +2, obj[prop][i] +3);
+                                               i=i+3;
+                    } else if ((obj[prop][i+1]  === obj[prop][i] +1) && (obj[prop][i+2] === obj[prop][i] +2)) {
+                                               keepTheseOnes[prop].push(obj[prop][i], obj[prop][i] +1, obj[prop][i] +2);
+                                               i=i+2;
+                    } else if (obj[prop][i+1]  === obj[prop][i] +1) {
+                                               maybes[prop].push(obj[prop][i], obj[prop][i] +1);
+                                               i++;
+                    } else {
+                                              possibleDiscard[prop][i] = obj[prop][i]
+                    }              
+                }
+        }
+
+          function removeUndefineds (obj) {
+              var otherObj = {};
+              for (var prop in obj) {
+                  otherObj[prop] = obj[prop].filter(function(n){ return n != undefined });
+              }
+              
+              return otherObj;
+          }
+
+
+        return {
+            keepTheseOnes: keepTheseOnes,
+            maybes: maybes,
+            possibleDiscard: removeUndefineds(possibleDiscard)
+        }
+        
+    },
+    
+    findMatches: function (objOfObjects)  {
+        var objectaArr = [];
+	objOfObjects.matches = [];
+        var j = 0;
+	objectaArr[0] = objOfObjects.maybes
+	objectaArr[1] = objOfObjects.possibleDiscard
+	for (var j=0; j<objectaArr.length; j++) {
+		for (var prop in objectaArr[j]) {
+			for (var i=0; i<objectaArr[j][prop].length; i++) {
+				lookforothers(objectaArr[j][prop][i], prop, j);
+			}
+		}
+	}
+	if (objOfObjects.matches.length) {
+            removeFromDiscard(objOfObjects.matches)
+        }
+        return objOfObjects;
+	function lookforothers(num, prop, j) {
+			if (prop == 'spades') {
+				return false;
+			}
+			
+			if (prop =='hearts') {
+				prop = 'spades'
+			}
+			
+			if (prop =='diamonds') {
+				prop = 'hearts'
+			}
+			
+			if (prop == 'clubs') {
+				prop = 'diamonds'
+			}
+			
+			
+			//if (!j) j=1;
+			for (var i=0; i<objectaArr[j][prop].length; i++) {
+				if (num == objectaArr[j][prop][i]) {
+						objOfObjects.matches.push(num);
+				}
+			}
+			
+			lookforothers(num, prop, j++);
+	}
+        
+        function removeFromDiscard(arr) {
+                var length = arr.length;
+                j = 0;
+                function loop (j) {
+                    for (var prop in objOfObjects.possibleDiscard ) {
+                        for (var i=0; i<objOfObjects.possibleDiscard[prop].length; i++)
+                        if (arr[j] == objOfObjects.possibleDiscard[prop][i] ){
+                                objOfObjects.possibleDiscard[prop].splice(i, 1)
+                        }
+                    }
+                    j++;
+                }
+                
+                if (j<length) {
+                    loop(j)
+                }
+                
+                
+        }
+    },
+    
+    firstFilteringOut: function (matchesArr, arrayofArrays) {
+            var i,
+                j,
+                array = [];
+                console.log(matchesArr);
+                console.log(arrayofArrays)
+                
+            for (i=1; i<matchesArr.length; i++) {
+                if (typeof matchesArr[i] == 'undefined') i= i+1;
+                 for (j=0; j<matchesArr[i].length; j++) {
+                     console.log(matchesArr[i]);
+                     var data = matchesArr[i][j];
+                     console.log(data);
+                     removeFromArrayofArrays(data);
+                 }
+            }
+            
+            function removeFromArrayofArrays(whatToRemove) {
+                    var i,
+                        j;
+                        
+                    for (i=0; i<arrayofArrays.length; i++) {
+                        if (whatToRemove === arrayofArrays[i][1] ) {
+                            array.push(i)
+                        }
+                      
+                    }              
+            }
+                                console.log(array);
     },
     
     furtherFilter: function (arr) {
@@ -471,15 +728,42 @@ RUMMY.computerPlayer.events = {
         for(var i=0; i<arr.length; i++) {
             var item = arr[i];
             counts[item] = (counts[item] || 0)+1;
+            
         }
         var array = [],
+        finalArray = new Array(4),       
         items;
+        for(var j=0; j<finalArray.length; j++) {
+            finalArray[j] = [];
+        }
         for(items in counts) {
             if(counts[items] === 1) {
                 array.push(items);
+                finalArray[0] = array
             }
+            
+            if(counts[items] === 2) {
+                //its a match
+                finalArray[1].push(items)
+            }
+            
+            if(counts[items] === 3) {
+                //its 3 good enough for points
+                finalArray[2].push(items)
+            }
+            
+            if(counts[items] === 4) {
+                //its 4 fucking perfect
+                finalArray[3].push(items)
+            }
+            
+            
+            
+            
+            
+            
         }
-        return array;
+        return finalArray;
     },
     
     
@@ -527,10 +811,9 @@ RUMMY.computerPlayer.events = {
 
 
 RUMMY.overlay = function () { 
-   var $triggerBttn = $('#trigger-overlay'),
-       $overlay = $('div.overlay'),
+  // var $triggerBttn = $('#trigger-overlay'),
+     var $overlay = $('div.overlay'),
        $closeBttn = $overlay.find( 'button.overlay-close' ),
-       tagged = false;
        toggleOverlay = function (e) {
            if (e) e.preventDefault();
             if( $overlay.hasClass('open')) {
@@ -540,6 +823,7 @@ RUMMY.overlay = function () {
                         $overlay.removeClass( 'close' );
                 };
                 $overlay.on( transitionEndEvent, onEndTransitionFn );
+                $('#intro').fadeOut();
             }
             else if( !($overlay.hasClass('close')) ) {
                     $overlay.addClass('open');
@@ -550,15 +834,51 @@ RUMMY.overlay = function () {
             }
        };
        
-       $triggerBttn.on( 'click', toggleOverlay );
+       //$triggerBttn.on( 'click', toggleOverlay );
        $closeBttn.on( 'click', toggleOverlay );
        
-          if (tagged) {
+          if (window.localStorage.getItem('modal') !== "falsy") {
               toggleOverlay();
+              setTimeout(function () {
+                    var audio = document.getElementById('shallWePlayAGame');
+                    audio.play();
+              }, 2000);
           }
+          
+          window.localStorage.setItem('modal', "falsy");
+          //window.localStorage.clear() for testing purposes
    
    
 };
+
+
+RUMMY.helpfulHints = function (param) {
+    $('div.bubble').addClass('hide');
+    var secondString = 'Sort your cards by either suit or match. Drag each card with your mouse. When you are done sorting, either take the top card from the discard pile or click take from deck button';
+    var thirdString = "Before you discard any of your cards you have the option to knock (end the game) - Any remaining cards that are not part of a valid combination are considered deadwood, \n\
+                      the total value of your deadwood should be ten points or less or you will be alerted that you are unable to knock if you are able to knock you point total will compared to Joshuas(the computer) too see if you won or lost"
+    var $html = null;
+    if (param === 'first') {
+        $html = $('<div class="first_bubble bubble">Click below to start game</div>');
+        $html.appendTo('#main_content');
+    }
+    
+    if (param === 'second') {
+        $html = $('<div class="second_bubble bubble">'+secondString+'</div>');
+        $html.appendTo('body');
+        setTimeout(function () {
+            $html.addClass('animated')
+        },1000);
+    }
+    
+    if (param === "third") {
+        $html = $('<div class="third_bubble bubble">'+thirdString+'</div>');
+        $html.appendTo('body');
+        setTimeout(function () {
+            $html.addClass('animated')
+        },1000);
+    }
+}
 
 //RUMMY.computerPlayer.events.createNewArray
 	
