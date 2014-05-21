@@ -80,6 +80,9 @@ RUMMY.cardValues = {
 	"queen" : 12,
 	"king" : 13
 }
+
+RUMMY.cardArray = ['ace', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'jack', 'queen', 'king'];
+
 RUMMY.each_suit = ['spades', 'clubs', 'hearts', 'diamonds'];
 RUMMY.takeCard = "take";
 RUMMY.discard = "discard";
@@ -101,36 +104,36 @@ RUMMY.computerPlayer.parentInfoObj = {};
 
 
 RUMMY.createarrayofcards = function (callcreatehtmldeck){
-    RUMMY.whole_deck = [];
+    this.whole_deck = [];
     var second_key ='',
         suit_object = '',
         key;
-    for (key in RUMMY.deckofcards) {
-            suit_object = RUMMY.deckofcards[key]; // {hearts, diamonds, clubs, spades }
+    for (key in this.deckofcards) {
+            suit_object = this.deckofcards[key]; // {hearts, diamonds, clubs, spades }
             var suit = suit_object;	
             for (second_key in suit) {	     //second_key is ace, two, three, etc    
-                 RUMMY.whole_deck.push(second_key + ' of ' + key + ' ' + suit[second_key]);  //e.g ace of hearts 1
+                 this.whole_deck.push(second_key + ' of ' + key + ' ' + suit[second_key]);  //e.g ace of hearts 1
             } 		
     }
-    RUMMY.whole_deck = RUMMY.whole_deck.shuffle(); //shuffling the deck
+    this.whole_deck = this.whole_deck.shuffle(); //shuffling the deck
     if (callcreatehtmldeck === true) {
-            RUMMY.fillinmaincontent();
-            RUMMY.loopthroughdiv();
-            RUMMY.events.dealcards();
+            this.fillinmaincontent();
+            this.loopthroughdiv();
+            this.events.dealcards();
     }
 };
 
 RUMMY.createhtmlDeck = function (wholeDeck) {
-    RUMMY.each_suit = RUMMY.each_suit.shuffle(); //shuffle the deck
+    this.each_suit = this.each_suit.shuffle(); //shuffle the deck
     var html = '<section id="deck">';
-    var eachsuitlength = RUMMY.each_suit.length;
+    var eachsuitlength = this.each_suit.length;
     var wholedecklength = wholeDeck.length,
         i,
         j;
     for (i=0; i < wholedecklength; i++) {
             for (j=0; j<eachsuitlength; j++) {
-                if (RUMMY.whole_deck[i].match(RUMMY.each_suit[j])) {
-                    html += '<section class="wrapper"><div class='+RUMMY.each_suit[j]+'>' + wholeDeck[i] + '</div><div class="back"></div></section>';
+                if (this.whole_deck[i].match(this.each_suit[j])) {
+                    html += '<section class="wrapper"><div class='+this.each_suit[j]+'>' + wholeDeck[i] + '</div><div class="back"></div></section>';
                 } 
             } // end inner for loop
     }
@@ -140,7 +143,7 @@ RUMMY.createhtmlDeck = function (wholeDeck) {
 
 RUMMY.fillinmaincontent = function() {
 	var main_content = document.getElementById('main_content');
-	main_content.innerHTML = this.createhtmlDeck(RUMMY.whole_deck); // creates the deck
+	main_content.innerHTML = this.createhtmlDeck(this.whole_deck); // creates the deck
 	var buttons = '<article><button id="deal">dealcards</button> <button disabled id="reshuffle">reshuffle</button><button id="takeCard" class="hide">Take from deck</button> <button id="knock" class="hide">Knock</button> </article>'; 
 	$(main_content).append(buttons);
         this.helpfulHints('first');
@@ -169,6 +172,7 @@ RUMMY.events =  {
     dealcards: function () {
       var that = this;
       var deal = document.getElementById('deal');
+      var $doItforTheChildren = $('#deck').children();
       deal.addEventListener('click', function () {
             var k = 1; var i = 52;
             RUMMY.helpfulHints()
@@ -176,9 +180,9 @@ RUMMY.events =  {
             //check these values on second call of deal cards  and k as well console log those bitches
             var refreshIntervalId = setInterval(function() {                     
                     if (i % 2 === 1) {
-                            $('#deck').children().eq(i).addClass('player temp').css({'-webkit-transform': 'translateX('+(k-50)+'px)','transform':'translateX('+(k-50)+'px)','zIndex':k+2 }).removeStyle('top');//.removeStyle('z-index') // player one
+                            $doItforTheChildren.eq(i).addClass('player temp').css({'-webkit-transform': 'translateX('+(k-50)+'px)','transform':'translateX('+(k-50)+'px)','zIndex':k+2 }).removeStyle('top');//.removeStyle('z-index') // player one
                             } else {                                
-                            $('#deck').children().eq(i).addClass('comp_player temp').css({left: k-50, 'top': '-185px'}); // computer player
+                            $doItforTheChildren.eq(i).addClass('comp_player temp').css({left: k-50, 'top': '-185px'}); // computer player
                     }
                     k = 50 + k;
                     i = i-1;
@@ -238,7 +242,7 @@ RUMMY.events =  {
                         }
                         flag = false;                      
                       }); 
-                   }, 50);                
+                   }, 1);                
         }
        
         if (which_one === "top_card") {
@@ -248,7 +252,7 @@ RUMMY.events =  {
                 var currentDeck = $('#area section:first-child').offset().left;
                 var whereToGo = (currentDeck - currentCard) -50;
                 whereToGo = ($object.hasClass('showdacard')) ? -49 : whereToGo;
-                $object.removeStyle('top').addClass('player temp').css({'-webkit-transform': 'translateX('+whereToGo+'px)','transform':'translateX('+whereToGo+'px)' })
+                $object.removeStyle('top').addClass('player temp speedUpAnimation').css({'-webkit-transform': 'translateX('+whereToGo+'px)','transform':'translateX('+whereToGo+'px)' })
                 .one(transitionEndEvent, function() { 
                        $object.removeClass('showdacard flipit temp').addClass('flipchild').prependTo('#player #area').removeAttr('style');
                        that.playerHover($object, 'one');
@@ -357,7 +361,7 @@ RUMMY.events =  {
                 this.disabled = true;
                 this.nextElementSibling.disabled = false;
                 var $topFromDeck = $deck.find('.delt:first').prev() || $deck.find(':last-child').prev();
-                $topFromDeck.addClass('player temp').css({'-webkit-transform': 'translateX(-50px)','transform':'translateX(-50px)' })
+                $topFromDeck.addClass('player temp speedUpAnimation').css({'-webkit-transform': 'translateX(-50px)','transform':'translateX(-50px)' })
                 .removeStyle('top')
                 .one(transitionEndEvent, function (event) {
                      that.flipCards('new_card', $(this));
@@ -398,67 +402,40 @@ RUMMY.computerPlayer.events = {
     },
     
     createNewArray: function (array, withSuit) {
-        console.log(array);
-        var firstPart = this.removeDuplicates(array);
-        console.log(firstPart);
-        var whichIndex = this.findTheHighCards(firstPart[0]);
         var arrOfArrays = this.makeArrayofArrays(withSuit);
-        //var testingNewIdea = this.firstFilteringOut(firstPart,arrOfArrays )
-        console.log(arrOfArrays);
         var filterOutArrayOfArraysObj = this.furtherFilter(arrOfArrays);
         var anotherObj = this.originalFilter(filterOutArrayOfArraysObj);
-        console.log(anotherObj);
+       // console.log(anotherObj);
         var sortedObjects = this.decideWhichOnesToKeep(anotherObj);
-        console.log(sortedObjects);
-        var matches = this.findMatches(sortedObjects);
-        console.log(matches);
-        
-        var getNumber = this.getNumber(filterOutArrayOfArraysObj);
-        var cardToDiscard = RUMMY.computerPlayer.cardToDiscard = firstPart[0][whichIndex];
-        //console.log(cardToDiscard);
-        var $obj = this.findCardtoDiscard(cardToDiscard);
+        //console.log(sortedObjects);
+        var objectsGalore = this.findMatches(sortedObjects);
+        console.log(objectsGalore);
+        var total = this.checkScore(objectsGalore);
+        console.log(total);
+        var whatCardToRidThisTime = this.shitPile(objectsGalore.possibleDiscard, objectsGalore.maybes, objectsGalore.oneMatch );
+        if (typeof whatCardToRidThisTime == 'string') {
+            var didwegetMatch = this.checkOneMatch(objectsGalore.oneMatch, objectsGalore.keepTheseOnes);
+            console.log(didwegetMatch);
+            if (!!didwegetMatch) {
+                objectsGalore = this.removeFromOneMatchAddToMoreThanOneMatch(objectsGalore, didwegetMatch)
+            } else {
+                
+            }
+        }
+        //if (whatCardToRidThisTime.length>2) whatCardToRidThisTime.slice(0,2);
+        whatCardToRidThisTime[1] = '.' + RUMMY.cardArray[whatCardToRidThisTime[1]-1];
+        var stringToDiscard = whatCardToRidThisTime.join('');
+        console.log(stringToDiscard);
+        var $obj = this.findCardtoDiscard(stringToDiscard);
         var $parent = $obj.parent();
         RUMMY.computerPlayer.parentInfoObj = this.getStyles($parent);
-      //  this.moveParents(parentInfoObj, $parent.parent(), $parent.prev())
         $obj.addClass('taketopCard').find('a').text(RUMMY.takeCard).addClass('take');
         $parent.addClass('flipit');
         RUMMY.events.discard($obj, $parent ,'donotrun');
         $('#takeCard').removeAttr('disabled').next('#knock').attr('disabled', true);     
     },
-    
-    moveParents: function (infoObj, $compArea, $prev) {
-        var left = infoObj.left;
-        console.log(infoObj);
-        console.log($prev);
-       if (infoObj.index != 0) setTimeout(function () {$prev.css('left',left )}, 2000);
-        
-         //.next().css('left', left);     
-    },
-    
-    getNumber: function (obj) {
-        for (var j = 0; j < RUMMY.each_suit.length; j++ ) {
-            if (RUMMY.each_suit[j] === "spades") {
-                var spades = [];
-                var numberedArray = actualNumbers(j, spades);
-                findConsecutive(numberedArray);
-              //  console.log(numberedArray);
-            }            
-        }
-        
-        function actualNumbers (j, suit) {
-            for(var i = 0; i < obj[RUMMY.each_suit[j]].length; i++) {
-                  //  console.log(obj[RUMMY.each_suit[j]][i]);
-                  //  console.log(RUMMY.one_suit[obj[RUMMY.each_suit[j]][i]]);
-                    suit.push(RUMMY.one_suit[obj[RUMMY.each_suit[j]][i]]);
-            }
-            return suit;
-        }
-        
-        function findConsecutive(array) {
-                //for statement
-        }
-    },
-    
+
+  
     originalFilter: function (object) {
         var prop;
         var i;
@@ -520,7 +497,6 @@ RUMMY.computerPlayer.events = {
                    return RUMMY.cardValues[prop];
                 }
             }
-           // return false;
 
         }
     },
@@ -548,7 +524,7 @@ RUMMY.computerPlayer.events = {
                     } else if ((obj[prop][i+1]  === obj[prop][i] +1) && (obj[prop][i+2] === obj[prop][i] +2)) {
                                                keepTheseOnes[prop].push(obj[prop][i], obj[prop][i] +1, obj[prop][i] +2);
                                                i=i+2;
-                    } else if (obj[prop][i+1]  === obj[prop][i] +1) {
+                    } else if ((obj[prop][i+1]  === obj[prop][i] +1) && obj[prop][i+1] < 7 ) {
                                                maybes[prop].push(obj[prop][i], obj[prop][i] +1);
                                                i++;
                     } else {
@@ -566,7 +542,6 @@ RUMMY.computerPlayer.events = {
               return otherObj;
           }
 
-
         return {
             keepTheseOnes: keepTheseOnes,
             maybes: maybes,
@@ -576,101 +551,232 @@ RUMMY.computerPlayer.events = {
     },
     
     findMatches: function (objOfObjects)  {
-        var objectaArr = [];
-	objOfObjects.matches = [];
-        var j = 0;
-	objectaArr[0] = objOfObjects.maybes
-	objectaArr[1] = objOfObjects.possibleDiscard
-	for (var j=0; j<objectaArr.length; j++) {
-		for (var prop in objectaArr[j]) {
-			for (var i=0; i<objectaArr[j][prop].length; i++) {
-				lookforothers(objectaArr[j][prop][i], prop, j);
-			}
-		}
-	}
-	if (objOfObjects.matches.length) {
-            removeFromDiscard(objOfObjects.matches)
-        }
-        return objOfObjects;
-	function lookforothers(num, prop, j) {
-			if (prop == 'spades') {
-				return false;
-			}
-			
-			if (prop =='hearts') {
-				prop = 'spades'
-			}
-			
-			if (prop =='diamonds') {
-				prop = 'hearts'
-			}
-			
-			if (prop == 'clubs') {
-				prop = 'diamonds'
-			}
-			
-			
-			//if (!j) j=1;
-			for (var i=0; i<objectaArr[j][prop].length; i++) {
-				if (num == objectaArr[j][prop][i]) {
-						objOfObjects.matches.push(num);
-				}
-			}
-			
-			lookforothers(num, prop, j++);
-	}
-        
-        function removeFromDiscard(arr) {
-                var length = arr.length;
-                j = 0;
-                function loop (j) {
-                    for (var prop in objOfObjects.possibleDiscard ) {
-                        for (var i=0; i<objOfObjects.possibleDiscard[prop].length; i++)
-                        if (arr[j] == objOfObjects.possibleDiscard[prop][i] ){
-                                objOfObjects.possibleDiscard[prop].splice(i, 1)
+        var properties = ['clubs', 'diamonds', 'hearts', 'spades'];
+        var propertyLength = properties.length;
+        var testArray = [];
+    	for (var j in objOfObjects ) {
+                    if (j != "keepTheseOnes") {
+                        for (var k = 0; k < propertyLength; k++) {	
+                                for (var i=0; i<objOfObjects[j][properties[k]].length; i++) {
+                                        testArray.push(objOfObjects[j][properties[k]][i]);
+                                }
                         }
                     }
-                    j++;
-                }
-                
-                if (j<length) {
-                    loop(j)
-                }
-                
-                
-        }
-    },
-    
-    firstFilteringOut: function (matchesArr, arrayofArrays) {
-            var i,
-                j,
-                array = [];
-                console.log(matchesArr);
-                console.log(arrayofArrays)
-                
-            for (i=1; i<matchesArr.length; i++) {
-                if (typeof matchesArr[i] == 'undefined') i= i+1;
-                 for (j=0; j<matchesArr[i].length; j++) {
-                     console.log(matchesArr[i]);
-                     var data = matchesArr[i][j];
-                     console.log(data);
-                     removeFromArrayofArrays(data);
-                 }
+    	}
+        testArray.sort(function (a,b) {
+            return a - b;
+        });
+        objOfObjects.oneMatch = [];
+        objOfObjects.moreThanOneMatch = [];
+        function findDupes (arr) {
+            var counts = {};
+            var matches = false;
+            for(var i = 0; i< arr.length; i++) {
+                var num = arr[i];
+                counts[num] = counts[num] ? counts[num]+1 : 1;
             }
             
-            function removeFromArrayofArrays(whatToRemove) {
-                    var i,
-                        j;
-                        
-                    for (i=0; i<arrayofArrays.length; i++) {
-                        if (whatToRemove === arrayofArrays[i][1] ) {
-                            array.push(i)
-                        }
-                      
-                    }              
+            for (var prop in counts) {
+                if (counts[prop] == 1) {
+                    delete counts[prop]
+                }
+                
+                if (counts[prop] == 2) {
+                    objOfObjects.oneMatch.push(parseInt(prop));
+                    matches = true;
+                    
+                } 
+                
+                if (counts[prop] > 2) {
+                    objOfObjects.moreThanOneMatch.push(parseInt(prop));
+                    matches = true;
+                }
+                
+                
             }
-                                console.log(array);
+            return matches;
+        }
+        var matches = findDupes(testArray);
+	if (!!matches) {
+            removeFromDiscard(objOfObjects.oneMatch, objOfObjects.moreThanOneMatch );
+            return objOfObjects;
+        } else {
+            return objOfObjects;
+        }
+
+        
+        function removeFromDiscard(arr1, arry2) {
+                var arr = arr1.concat(arry2);
+                var x = -1;
+                function loop (j, discardOrMaybe) {
+                    for (var prop in objOfObjects[discardOrMaybe] ) {
+                        for (var i=0; i<objOfObjects[discardOrMaybe][prop].length; i++)
+                        if (arr[j] == objOfObjects[discardOrMaybe][prop][i] ){
+                                objOfObjects[discardOrMaybe][prop].splice(i, 1)
+                        }
+                    }
+                    
+                    if (j<arr.length) {
+                            j++;
+                            loop(j, discardOrMaybe );
+                    }
+
+                    return discardOrMaybe;
+ 
+                }
+                var endFirstLoop = loop(0, 'possibleDiscard');
+                
+                if (endFirstLoop == "possibleDiscard") {
+                    loop(0, 'maybes');
+                }
+       }
+       
     },
+
+    checkScore: function (obj) {
+        var keys = Object.keys(obj);
+        var suits = ['clubs', 'diamonds', 'hearts', 'spades'];
+        var suitLength = suits.length;
+        var keyLength = keys.length;
+        var i=0;
+        var k=0;
+        var p = 0;
+        var totalCountAll = [];
+        var total;
+
+        function addUpValues (arr) {
+            var length = arr.length;
+            var value = 0;
+            var i = 0;
+            for (var i = 0; i<arr.length; i++) {
+                value += arr[i]
+            }
+
+            return value;
+        }
+
+        for (i; i<keyLength; i++) {
+            if (keys[i] !== "keepTheseOnes" && keys[i] !== "moreThanOneMatch" ) {
+                if (Array.isArray(obj[keys[i]])) {
+                     for (var j=0; j<obj[keys[i]].length; j++) {
+                            totalCountAll.push(parseInt((obj[keys[i]][j]) * 2))
+                     }
+                }
+
+                if ($.isPlainObject(obj[keys[i]])) {
+                    var key = Object.keys(obj[keys[i]]);
+                    for (var prop in obj[keys[i]]) {
+                        if (obj[keys[i]][prop].length) {
+                            for (var x =0; x<obj[keys[i]][prop].length; x++) {
+                                totalCountAll.push((obj[keys[i]][prop][x]));
+                            }
+                        }                      
+                    }
+                }
+
+
+            }
+        }
+
+        return addUpValues(totalCountAll);
+    },
+    
+shitPile: function (discardObj, maybeObj) {
+    var arr= [];
+    var i =0;
+    var prop;
+    var args = arguments;
+
+    function looping(num, i) {
+            for (prop in args[i]) {
+                console.log(args[i])
+                for (var j = 0; j< args[i][prop].length; j++) {
+                    console.log(args[i][prop][j] + ' ' + num)
+                    if (args[i][prop][j] > num) {
+                            arr.push('.'+prop,args[i][prop][j]);
+                            return arr;
+                    }                   
+                }				
+            }
+        
+        if (num === 8) {
+           arr = looping(4, 0);
+           if (Array.isArray(arr)) return arr
+        }
+
+        if (num === 4) {
+           arr = looping(9, 1);
+           if (Array.isArray(arr)) return arr
+        }
+
+        if (num === 9) {
+           arr = looping(3, 1);
+            if (Array.isArray(arr)) return arr
+        }
+     }
+
+    arr = looping(8, i);
+    return arr || 'shitdick';
+    
+		
+    },
+    
+    checkOneMatch: function (oneMatch, keepObj) {
+        //http://jsfiddle.net/A4eJ8/5/
+        var arr = RUMMY.each_suit;
+        var first = [];
+        var last =[];       
+        var findMultiples = function (obj) {
+            var foundMatch = [];
+            for (var i =0; i<arr.length; i++) {                
+                if (obj[arr[i]].length == 4) {
+                    first = obj[arr[i]].slice(0,1);
+                    last =  obj[arr[i]].slice(-1);
+                    foundMatch.push(first.join(), last.join());
+                }
+
+                if (obj[arr[i]].length == 5) {
+                    first = obj[arr[i]].slice(0,1);
+                    last =  obj[arr[i]].slice(-1);
+                    foundMatch.push(first, last);
+                }
+            }
+            
+            return foundMatch
+        };
+        var compareToOneMatch = function (arr) {
+            for (var i=0; i<arr.length; i++) {
+                if (arr[i] == didWeFindAnything[0]) {
+                   // arr.push(first[0]);
+                    return parseInt(didWeFindAnything[0]);
+                }
+                
+                if (arr[i] == didWeFindAnything[1]) {
+                  //  arr.push(first[1])
+                    return parseInt(didWeFindAnything[1]);
+                }                   
+            }
+            return false;
+        };
+        var didWeFindAnything = findMultiples(keepObj);
+        if (!!didWeFindAnything.length) {
+           // if (first.length > 2 || last.length > 2) {
+           //     return false;
+            //}
+            return compareToOneMatch(oneMatch);
+        } else {
+            return false;
+        }          
+    },
+    
+    removeFromOneMatchAddToMoreThanOneMatch: function (obj, finalNum) {
+        var oneMatch = obj.oneMatch;
+        var index = oneMatch.indexOf(finalNum);
+        oneMatch.splice(index, 1);
+        obj.moreThanOneMatch.push(finalNum);
+        return obj;
+    },
+    
     
     furtherFilter: function (arr) {
             var spades = [],
@@ -723,61 +829,10 @@ RUMMY.computerPlayer.events = {
         return compDeck;
     },
     
-    removeDuplicates: function (arr) {
-        var counts = {};
-        for(var i=0; i<arr.length; i++) {
-            var item = arr[i];
-            counts[item] = (counts[item] || 0)+1;
-            
-        }
-        var array = [],
-        finalArray = new Array(4),       
-        items;
-        for(var j=0; j<finalArray.length; j++) {
-            finalArray[j] = [];
-        }
-        for(items in counts) {
-            if(counts[items] === 1) {
-                array.push(items);
-                finalArray[0] = array
-            }
-            
-            if(counts[items] === 2) {
-                //its a match
-                finalArray[1].push(items)
-            }
-            
-            if(counts[items] === 3) {
-                //its 3 good enough for points
-                finalArray[2].push(items)
-            }
-            
-            if(counts[items] === 4) {
-                //its 4 fucking perfect
-                finalArray[3].push(items)
-            }
-            
-            
-            
-            
-            
-            
-        }
-        return finalArray;
-    },
-    
-    
-    findTheHighCards:function (arr) {
-        for (var i=0; i < arr.length; i++) {
-            if (arr[i] === "king" || arr[i] === "queen" || arr[i] === "jack" || arr[i] === "ten" || arr[i] === "nine" ) {
-                return i;
-            }
-        }
-        return Math.floor(Math.random() * (arr.length - 0 + 1) + 0);       
-    },
+
     
     findCardtoDiscard: function (eleClass) {
-      return $('#comp_area').find('.'+eleClass).addClass('discard');
+      return $('#comp_area').find(eleClass).addClass('discard');
     },
     
     getStyles: function ($ele) {

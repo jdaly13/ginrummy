@@ -81,6 +81,12 @@ section.wrapper > div {
     transition: all 1s ease 1.5s;
 }
 
+section.wrapper.speedUpAnimation > div {
+    -webkit-transition: all .8s ease .3s;
+    -o-transition: all .8s ease .3s;
+    transition: all .8s ease .3s;
+}
+
 section.wrapper > div:first-child {
   -webkit-transform: rotateY(-180deg);
   transform: rotateY(-180deg);
@@ -300,6 +306,18 @@ left:455px !important;
 -webkit-transition:all 2.1s ease .8s; 
 -moz-transition:all 2.1s ease .8s;
 transition:all 2.1s ease .8s;
+}
+
+#deck section.wrapper.player.speedUpAnimation {
+-webkit-transition:all .8s ease 0s; 
+-moz-transition:all .8s ease 0s;
+transition:all .8s ease 0s;
+}
+
+#deck section.wrapper.player.speedUpAnimation.flipchild {
+-webkit-transition:all .4s ease .1s; 
+-moz-transition:all .4s ease .1s;
+transition:all .4s ease .1s;
 }
 
 section.wrapper.player  {
