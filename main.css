@@ -296,10 +296,10 @@ transform: perspective(500px) rotateY(0deg);
 }
 
 #deck section.wrapper.animate {
--moz-animation: my-animation 2s;
+/*-moz-animation: my-animation 2s;
 -webkit-animation: my-animation 2s;
 animation:my-animation 2s;
-left:455px !important;
+left:455px !important;*/
 }
 
 #deck section.wrapper.player {
