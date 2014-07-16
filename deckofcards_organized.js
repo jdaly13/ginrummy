@@ -82,7 +82,6 @@ RUMMY.cardValues = {
 }
 
 RUMMY.cardArray = ['ace', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'jack', 'queen', 'king'];
-
 RUMMY.each_suit = ['spades', 'clubs', 'hearts', 'diamonds'];
 RUMMY.takeCard = "take";
 RUMMY.discard = "discard";
@@ -96,7 +95,11 @@ RUMMY.deckofcards = (function (obj) {
     }
     return deck;
 }(RUMMY || {})); // returns object
-
+RUMMY.whole_deck = [];
+RUMMY.knock = false;
+RUMMY.legitimateKnock = false;
+RUMMY.firstPersonScore = 0;
+RUMMY.$deckContainer = null // will become jQuery object;
 RUMMY.computerPlayer = {};
 RUMMY.computerPlayer.deck = [];
 RUMMY.computerPlayer.parentInfoObj = {};
@@ -104,7 +107,6 @@ RUMMY.computerPlayer.parentInfoObj = {};
 
 
 RUMMY.createarrayofcards = function (callcreatehtmldeck){
-    this.whole_deck = [];
     var second_key ='',
         suit_object = '',
         key;
@@ -144,6 +146,7 @@ RUMMY.createhtmlDeck = function (wholeDeck) {
 RUMMY.fillinmaincontent = function() {
 	var main_content = document.getElementById('main_content');
 	main_content.innerHTML = this.createhtmlDeck(this.whole_deck); // creates the deck
+        RUMMY.$deckContainer = $('#deck');
 	var buttons = '<article><button id="deal">dealcards</button> <button disabled id="reshuffle">reshuffle</button><button id="takeCard" class="hide">Take from deck</button> <button id="knock" class="hide">Knock</button> </article>'; 
 	$(main_content).append(buttons);
         this.helpfulHints('first');
@@ -152,8 +155,8 @@ RUMMY.fillinmaincontent = function() {
 
 RUMMY.loopthroughdiv = function () {
     var html_text;
-    var html_text_num;
-    $('#deck div').not('.back').each(function (i) { 
+    var html_text_num;   
+    this.$deckContainer.find('div').not('.back').each(function (i) { 
             html_text = $(this).text();
             html_text_num = html_text.substr(html_text.length - 2);
             var space = html_text.split(" ");
@@ -172,7 +175,8 @@ RUMMY.events =  {
     dealcards: function () {
       var that = this;
       var deal = document.getElementById('deal');
-      var $doItforTheChildren = $('#deck').children();
+      var $htmlDeck = RUMMY.$deckContainer;
+      var $doItforTheChildren = $htmlDeck.children();
       deal.addEventListener('click', function () {
             var k = 1; var i = 52;
             RUMMY.helpfulHints()
@@ -188,8 +192,8 @@ RUMMY.events =  {
                     i = i-1;
                     if (i < 32) {     //10 cards each 52-32         
                   //  $('#deck').children('.player').removeStyle('z-index')
-                    that.flipNewDeck('player', $('#deck .player'));
-                    that.flipNewDeck('comp', $('#deck .comp_player'));
+                    that.flipNewDeck('player', $htmlDeck.find('.player'));
+                    that.flipNewDeck('comp', $htmlDeck.find('.comp_player'));
                     clearInterval(refreshIntervalId);
                     }
             }, 300); // end setInterval	
@@ -292,7 +296,7 @@ RUMMY.events =  {
             var deckLastChild = deck.lastElementChild;
             var that = this;
             var $takeCard = $('#takeCard');
-            var $knockCard = $('#knock')
+            this.knock(document.getElementById('knock'));
             $(deckLastChild).removeStyle('left').addClass('showdacard delt').on(transitionEndEvent, function() {      
                 $(this).addClass('flipit').children('div').addClass('flipit taketopCard ').on(transitionEndEvent, function() {                    
                     $takeCard.removeClass('hide').next().removeClass('hide').attr('disabled', true)
@@ -301,6 +305,16 @@ RUMMY.events =  {
             });
             that.takeNextCard($deck, $takeCard, $(deckLastChild));
             RUMMY.helpfulHints('second');
+    },
+    
+    
+    knock: function (knockButton) {
+        knockButton.addEventListener('click', function (event) {
+                console.log(event);
+                RUMMY.knock = true;
+                alert('please choose one last card to discard');
+              //  RUMMY.computerPlayer.events.preFilteringOfCreateArray($('#area').children(), true);
+        }, false)
     },
 	
     playerHover: function (obj) {
@@ -342,11 +356,21 @@ RUMMY.events =  {
             } else {
                 $obj.appendTo('#deck').css({'z-index':lastChildzIndex +1, "left":'200px', "top":'32px'}).addClass('delt');
             }
+            
+            if (!!RUMMY.knock) { 
+                RUMMY.computerPlayer.events.preFilteringOfCreateArray($('#area').children(), 'firstPlayer');
+                RUMMY.knock = false;
+                if( !!RUMMY.legitimateKnock) {
+                    RUMMY.computerPlayer.events.preFilteringOfCreateArray($('#comp_area').children(), 'computer');
+                    return false;
+                }
+            }
             if (arguments[2] !== 'donotrun') {               
                 setTimeout(function () {
                     RUMMY.computerPlayer.events.takeNextCard();
                 }, 1000);
             }
+               
             
     },
 	
@@ -389,7 +413,7 @@ RUMMY.events =  {
 }; // end RUMMY.events
 
 RUMMY.computerPlayer.events = {
-    preFilteringOfCreateArray: function ($obj) {
+    preFilteringOfCreateArray: function ($obj, player) {
          var suitNCardArray = [];
          var computerDeck = [];
          $obj.children(':first-child').each(function(i, element) {                  
@@ -398,33 +422,61 @@ RUMMY.computerPlayer.events = {
                     computerDeck.push(value);
                     suitNCardArray.push(suit_card_n_value);
          });
-         this.createNewArray(computerDeck, suitNCardArray);
+         var topCard = this.createNewArray(computerDeck, suitNCardArray, player);
+         if (!!topCard) return true
     },
     
-    createNewArray: function (array, withSuit) {
-        var arrOfArrays = this.makeArrayofArrays(withSuit);
-        var filterOutArrayOfArraysObj = this.furtherFilter(arrOfArrays);
-        var anotherObj = this.originalFilter(filterOutArrayOfArraysObj);
-       // console.log(anotherObj);
-        var sortedObjects = this.decideWhichOnesToKeep(anotherObj);
-        //console.log(sortedObjects);
-        var objectsGalore = this.findMatches(sortedObjects);
+    createNewArray: function (array, withSuit, player) {
+        var arrOfArrays = this.makeArrayofArrays(withSuit); // returns [["clubs", "two"], ["spades", "two"], ["clubs", "ten"], etc]
+        var filterOutArrayOfArraysObj = this.furtherFilter(arrOfArrays); //returns obj { clubs: ["six"], diamonds: ["three", "ace", "four"], hearts: ["ten", "queen"], etc }
+        var anotherObj = this.originalFilter(filterOutArrayOfArraysObj); // returns obj { clubs: [6], diamonds: [3, 1, 4], hearts: [10, 12], etc }
+        var sortedObjects = this.decideWhichOnesToKeep(anotherObj); // filtering suits/numbers in order returns object with objects of arrays { keepTheseOnes:{ clubs: [1], diamonds:[]} maybes: {}, possibleDiscard etc}
+        var objectsGalore = this.findMatches(sortedObjects); // adds to properties to the object 
         console.log(objectsGalore);
+        if (player === 'topCard') {
+            var learnToSwim = this.doWeTakeTopCard($('#deck'), objectsGalore);
+            console.log(learnToSwim);
+            return learnToSwim;
+        }
         var total = this.checkScore(objectsGalore);
         console.log(total);
+        if (player === 'firstPlayer') {
+                if (total <= 10) {
+                    alert('yes this is a legitimate knock');
+                    RUMMY.legitimateKnock = true;
+                    RUMMY.firstPersonScore = total;
+                } else {
+                    alert("you don't have enough to knock")
+                }
+          return false;
+        } 
         var whatCardToRidThisTime = this.shitPile(objectsGalore.possibleDiscard, objectsGalore.maybes, objectsGalore.oneMatch );
-        if (typeof whatCardToRidThisTime == 'string') {
-            var didwegetMatch = this.checkOneMatch(objectsGalore.oneMatch, objectsGalore.keepTheseOnes);
-            console.log(didwegetMatch);
-            if (!!didwegetMatch) {
-                objectsGalore = this.removeFromOneMatchAddToMoreThanOneMatch(objectsGalore, didwegetMatch)
-            } else {
-                
-            }
-        }
+        console.log(whatCardToRidThisTime);
+        var valueOfCard = this.checkTheValueof(whatCardToRidThisTime, objectsGalore);
+        if (valueOfCard) whatCardToRidThisTime = valueOfCard;
         //if (whatCardToRidThisTime.length>2) whatCardToRidThisTime.slice(0,2);
-        whatCardToRidThisTime[1] = '.' + RUMMY.cardArray[whatCardToRidThisTime[1]-1];
-        var stringToDiscard = whatCardToRidThisTime.join('');
+        var stringToDiscard;
+        var finalTotal;
+        if (typeof whatCardToRidThisTime === 'number' ) {
+            finalTotal = total - whatCardToRidThisTime;
+            stringToDiscard = "." + RUMMY.cardArray[whatCardToRidThisTime -1];
+        } else {
+            finalTotal = total - ((whatCardToRidThisTime[1] > 10) ? 10 : whatCardToRidThisTime[1]);
+            whatCardToRidThisTime[1] = '.' + RUMMY.cardArray[whatCardToRidThisTime[1]-1];
+            stringToDiscard = whatCardToRidThisTime.join('');
+        }
+        console.log(finalTotal);
+        if (finalTotal < 20) {
+            alert('computer player');
+            console.log(player);
+        }
+        if (player === 'computer') {
+            RUMMY.computerScore = total;
+            var finalScore = RUMMY.computerScore - RUMMY.firstPersonScore;
+            finalScore > 0 ? alert('you win your score is ' + finalScore) : alert('you lost the computer scored ' +Math.abs(finalScore) + 10);
+            return false;
+            //alert(RUMMY.computerScore - RUMMY.firstPersonScore);
+        }        
         console.log(stringToDiscard);
         var $obj = this.findCardtoDiscard(stringToDiscard);
         var $parent = $obj.parent();
@@ -433,6 +485,7 @@ RUMMY.computerPlayer.events = {
         $parent.addClass('flipit');
         RUMMY.events.discard($obj, $parent ,'donotrun');
         $('#takeCard').removeAttr('disabled').next('#knock').attr('disabled', true);     
+        
     },
 
   
@@ -632,6 +685,23 @@ RUMMY.computerPlayer.events = {
        }
        
     },
+    
+    
+    checkTheValueof: function (val, objectsGalore) {
+       if (typeof val == 'string') {
+            var didwegetMatch = this.checkOneMatch(objectsGalore.oneMatch, objectsGalore.keepTheseOnes);
+            console.log(didwegetMatch);
+            if (!!didwegetMatch) {
+                objectsGalore = this.removeFromOneMatchAddToMoreThanOneMatch(objectsGalore, didwegetMatch)
+            } else {
+                console.log('what is the next step') // next step go through oneMatch array find anyting over the value of 5 and discard
+                var whichMatch = this.lookAtOneMatch(objectsGalore.oneMatch);
+                return whichMatch;
+            }
+        } else {
+            return false;
+        }
+    },
 
     checkScore: function (obj) {
         var keys = Object.keys(obj);
@@ -648,7 +718,8 @@ RUMMY.computerPlayer.events = {
             var length = arr.length;
             var value = 0;
             var i = 0;
-            for (var i = 0; i<arr.length; i++) {
+            console.log(arr)
+            for (i = 0; i<arr.length; i++) {
                 value += arr[i]
             }
 
@@ -659,16 +730,26 @@ RUMMY.computerPlayer.events = {
             if (keys[i] !== "keepTheseOnes" && keys[i] !== "moreThanOneMatch" ) {
                 if (Array.isArray(obj[keys[i]])) {
                      for (var j=0; j<obj[keys[i]].length; j++) {
-                            totalCountAll.push(parseInt((obj[keys[i]][j]) * 2))
+                            if (obj[keys[i]][j] > 10) {
+                                totalCountAll.push(parseInt(10 * 2))
+                            } else {
+                                totalCountAll.push(parseInt((obj[keys[i]][j]) * 2))
+                            }
+                            
                      }
                 }
 
                 if ($.isPlainObject(obj[keys[i]])) {
-                    var key = Object.keys(obj[keys[i]]);
+                   // var key = Object.keys(obj[keys[i]]);
                     for (var prop in obj[keys[i]]) {
                         if (obj[keys[i]][prop].length) {
                             for (var x =0; x<obj[keys[i]][prop].length; x++) {
-                                totalCountAll.push((obj[keys[i]][prop][x]));
+                                if (obj[keys[i]][prop][x] > 10) {
+                                    totalCountAll.push(10);
+                                } else {
+                                    totalCountAll.push((obj[keys[i]][prop][x]));
+                                }
+                                
                             }
                         }                      
                     }
@@ -810,6 +891,16 @@ shitPile: function (discardObj, maybeObj) {
             };
     },
     
+    lookAtOneMatch: function (arr) {
+        var i;
+        var length = arr.length
+        for (i=0; i<length; i++ ) {
+            if (arr[i] > 4) {
+                return arr[i];
+            }
+        }
+    },
+    
     makeArrayofArrays: function (array) {
         var length;
         var another = [];
@@ -829,10 +920,74 @@ shitPile: function (discardObj, maybeObj) {
         return compDeck;
     },
     
+    doWeTakeTopCard: function ($deck, obj) {
+        var $topCardContainer = $deck.children(':last');
+        var $element = $topCardContainer.find(':first-child');
+        var dataValue = $element.attr('data-value');
+        console.log(dataValue)
+        var makeArray = $element.attr('class').split(' ');
+        console.log(makeArray);
+        var prop;
+        var paleBlueEyes = makeArray.splice(0,2);
+
+        var object = obj.keepTheseOnes;
+        var oneMatchArray = obj.oneMatch;
+        var morThanOneMatchArray = obj.moreThanOneMatch;
+       // var makeComparisionArray = $topCardContainer.find(':first-child').attr('class').split(' ');
+       //this.checkTheValueof(dataValue, obj);
+        var topCardComparison = function(arr, dataValue) {
+            console.log(arr);
+            console.log(dataValue);
+            var i, j;
+            var suit = arr[0];
+            console.log(object);
+            for (prop in object) {
+                console.log(prop)
+                if (prop === suit) {
+                    console.log(object[suit])
+                   if(object[suit].length) {
+                       var first = object[suit][0];
+                       var last = object[suit][object[suit].length - 1];
+                       if ((first - 1) === dataValue) {
+                           return true;
+                       }
+                       
+                       if ((last + 1) === dataValue) {
+                           return true;
+                       }
+                   } 
+                }
+            }
+            
+            console.log(oneMatchArray);
+            for (i=0; i<oneMatchArray.length; i++) {
+                    console.log(dataValue);
+                    console.log(oneMatchArray[i]);
+                if (dataValue == oneMatchArray[i]) {
+                    console.log('match');
+                    return true;
+                }
+            }
+            console.log(morThanOneMatchArray);
+            for (j=0; j < morThanOneMatchArray.length; j++) {
+                if (dataValue === morThanOneMatchArray[j]) {
+                    return true;
+                }
+            }
+            
+            return false;
+            
+           
+        }
+        
+                return topCardComparison(paleBlueEyes, dataValue);
+        
+    },
+    
 
     
     findCardtoDiscard: function (eleClass) {
-      return $('#comp_area').find(eleClass).addClass('discard');
+      return $('#comp_area').find(eleClass).first().addClass('discard');
     },
     
     getStyles: function ($ele) {
@@ -851,6 +1006,12 @@ shitPile: function (discardObj, maybeObj) {
        var pos = RUMMY.computerPlayer.parentInfoObj.left || lastInHandLeftPos + 50+'px';
        var zIndex = RUMMY.computerPlayer.parentInfoObj.zIndex || 25;
        var $lastInDeck = $deck.find('.delt:first').prev();
+       var alksjdfaldsfd = this.preFilteringOfCreateArray($('#comp_area').children(), 'topCard');
+       console.log(alksjdfaldsfd);
+       if (!!alksjdfaldsfd) {
+           console.log('holy shit');
+           return false;
+       }
        $lastInDeck.addClass('comp_player temp').css({'left':pos, 'top': '-185px', 'zIndex':zIndex}).one(transitionEndEvent, function () {
                // $(this).insertAfter('#comp_player #comp_area section:eq('+eq+')').addClass('testies')
                 $(this).prependTo('#comp_player #comp_area');
@@ -941,6 +1102,7 @@ $(document).ready(function () {
 	RUMMY.createarrayofcards();
 	RUMMY.fillinmaincontent();
 	RUMMY.loopthroughdiv();
+    
 	
 	//events
 	RUMMY.events.dealcards();
