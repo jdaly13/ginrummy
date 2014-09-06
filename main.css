@@ -296,10 +296,10 @@ transform: perspective(500px) rotateY(0deg);
 }
 
 #deck section.wrapper.animate {
-/*-moz-animation: my-animation 2s;
+-moz-animation: my-animation 2s;
 -webkit-animation: my-animation 2s;
 animation:my-animation 2s;
-left:455px !important;*/
+left:455px !important;
 }
 
 #deck section.wrapper.player {
@@ -635,4 +635,45 @@ background:lightgray
     z-index: 0;
     right: -25px;
     top: 43px;
+}
+
+
+#game_over h2 {
+    font-size:24px;
+    text-align:center;
+}
+
+
+/* SCORING SECTION */
+#score {
+    position: absolute;
+    right:2%;
+    top:2%;
+    width: 300px;
+    border: 1px solid #cccccc;
+    display:none;
+}
+
+#you {
+    float:left;
+    width:48%;
+    box-sizing: border-box;
+    padding:2%;
+    margin-right:2%;
+    border-right:1px solid #cccccc;
+    text-align:center;
+    
+}
+
+#joshua {
+    float:right;
+    width:48%;
+    box-sizing: border-box;
+    padding:2%;
+    text-align:center;
+    
+}
+
+#score > div > span {
+    display:block;
 }
