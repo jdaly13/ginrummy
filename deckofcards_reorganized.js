@@ -148,16 +148,23 @@ RUMMY.prototype = {
             if (total <= 10) {
                 player.legitimateKnock = true;
                 player.firstPersonScore = total;
+                player.deck = objectsGalore;
             } else {
                 alert("you don't have enough to knock");
             }
             return false;
         }
 
-        if (playerOne === 'findFirstPlayerScore') {
-            finalScore = total - computerScore;
+        if (playerOne === 'findFirstPlayerScore') { //computer knocked already finding out your score bitch!
+            console.log(total);
+            console.log(compPlayer.score);
+            finalScore = total - compPlayer.score;
+            if (compPlayer.score === 0) finalScore = finalScore + 20; //if computer scores gin rummy perfect hand
+            console.log(compPlayer.deck);
+            var showCardObj = this.showYourCardsJoshua(compPlayer.deck, "Joshua");
+            this.displayJoshuaCards(showCardObj); // manipulate the DOM
             // finalScore > 0 ? alert('the computer wins, they score ' + finalScore) : alert('you win and scored ' + Math.abs(finalScore) + 10);
-            finalScore > 0 ? this.makeLoveNotTupperWar(finalScore, playerOne, false) : this.makeLoveNotTupperWar(finalScore, playerOne, true);
+            finalScore > 0 ? this.makeLoveNotTupperWar(finalScore, playerOne, false) : this.makeLoveNotTupperWar(Math.abs(finalScore) + 10, playerOne, true);
             return false;
         }
 
@@ -172,24 +179,32 @@ RUMMY.prototype = {
             whatCardToRidThisTime[1] = '.' + this.cardArray[whatCardToRidThisTime[1] - 1];
             console.log(whatCardToRidThisTime);
             stringToDiscard = whatCardToRidThisTime.join(''); //FIX THIS!!!!
+            console.log(stringToDiscard);
         }
 
         if (finalTotal < 10 && playerOne !== 'computer') {
             //alert('computer player');
             computerKnock = true;
-            computerScore = finalTotal;
+            compPlayer.score = computerScore = finalTotal;
+            compPlayer.deck = objectsGalore;
+            
         }
 
-        if (playerOne === 'computer') {
-            computerScore = total;
+        if (playerOne === 'computer') { // this happens when first player knocks and we must find computer score now
+            compPlayer.score = computerScore = total;
             console.log(computerScore);
             console.log(player.firstPersonScore);
             finalScore = computerScore - player.firstPersonScore;
+            if (player.firstPersonScore === 0) finalScore = finalScore + 20;
+            console.log(player.deck);
+            console.log(objectsGalore);
             //finalScore > 0 ? alert('you win your score is ' + finalScore) : alert('you lost the computer scored ' + Math.abs(finalScore) + 10);
+            this.showYourCardsJoshua(objectsGalore, false);
             finalScore > 0 ? this.makeLoveNotTupperWar(finalScore, playerOne, true) : this.makeLoveNotTupperWar(finalScore, playerOne, false);
             return false;
         }
-
+        
+        console.log('logged');
         $frontSideOfCardToBeDiscarded = this.findCardtoDiscard(stringToDiscard);
         $cardToBeDiscarded = $frontSideOfCardToBeDiscarded.parent();
         compPlayer.parentInfoObj = this.getStyles($cardToBeDiscarded);
@@ -769,11 +784,61 @@ RUMMY.prototype = {
     makeLoveNotTupperWar: function (score, string, win) {
         var obj = {};
         obj.heading = win ? "Congratulations You Won " : "Sorry you lost";
-        obj.text = string === 'findFirstPlayerScore' ? 'Joshua Scored ' + score + ' points' : 'You Scored ' + score + ' points';
-        obj.score = score;
         obj.win = win ? "You" : "Joshua";
+        obj.text = string === 'findFirstPlayerScore' ? obj.win + ' scored ' + score + ' points' : obj.win + ' scored ' + score + ' points';
+        obj.score = score;
+
 
         this.overlay(obj);
+    },
+    
+    
+    showYourCardsJoshua: function (obj, joshuaKnocked) {
+        if (joshuaKnocked) {
+            //we can not lay deadwood
+        }
+        
+       // http://jsfiddle.net/fv6Ls7fg/1/
+        
+        $('#comp_area').children().removeAttr('style').end().parent().css({'marginLeft': '300px', 'top': '15px'});
+        var prop;
+        var runsArray = [];
+        var matchArray = [];
+        var keep = obj.keepTheseOnes;
+        var moreThanOneMatch = obj.moreThanOneMatch;
+        var obj = {};
+        //this.cardArray[whatCardToRidThisTime - 1]
+        
+        for (prop in keep) {
+            for (var i = 0; i<keep[prop].length; i++) {
+               /* var arr = [];
+                arr.push("."+prop, "."+this.cardArray[keep[prop][i] - 1]);
+                runsArray.push(arr.join(' ')) */
+                keep[prop][i] = "." + prop + "." + this.cardArray[keep[prop][i] - 1];
+            }
+            
+        }
+        
+        for (var j=0; j<moreThanOneMatch.length; j++) {
+            matchArray.push("."+this.cardArray[moreThanOneMatch[j] - 1]);
+        }
+        
+        console.log(keep);
+        console.log(matchArray);
+        keep.match = matchArray;
+        
+       /* return {
+            theRuns: keep,
+            atLeastThree: matchArray
+            
+        } */
+        
+        return keep;
+        
+    },
+    
+    displayJoshuaCards: function (obj) {
+        
     },
 
 
@@ -1131,6 +1196,7 @@ player.legitimateKnock = false;
 player.knocked = false;
 player.playHoverCalled = false;
 player.firstPersonScore = null;
+player.deck = null;
 
 //this function only gets invoked once while the events below get invoked many times
 player.takeCardEvent = function ($deck, $takefromdeckbutton, $lastChild) {
@@ -1245,6 +1311,8 @@ player.preDiscard = function ($container) {
 
 var compPlayer = Object.create(rummy);
 compPlayer.parentInfoObj = {};
+compPlayer.score = null;
+compPlayer.deck = null;
 
 compPlayer.takeNextCard = function () {
     var that = this;
