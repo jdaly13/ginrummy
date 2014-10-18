@@ -677,3 +677,26 @@ background:lightgray
 #score > div > span {
     display:block;
 }
+
+
+/* Styles for once is game is over and computer lays deadwood */
+.runs_wrapper {
+	position:relative;
+        height:152px;
+        position:absolute;
+}
+
+
+
+.runs_wrapper section.wrapper > div:first-child {
+	transform: rotateY(0deg);
+	z-index:5;
+	width:85px;
+	float:left;
+}
+
+.runs_wrapper > .comp_player.wrapper {
+    min-width:85px;
+    height: 120px;
+    float:left;
+}
