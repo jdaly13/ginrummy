@@ -53,38 +53,39 @@ function RUMMY() {}
 RUMMY.prototype = {
 
 
-    discard: function ($discard, $obj) {
-        var that = this;       
+    discard: function ($discard, $obj) {      
         $discard.removeClass('discard');
         var $siblings = $obj.siblings();
+        var $deck = this.$htmlDeck;
+        var $area = this.$area;
         $siblings.find('a').removeClass('discard').parent().removeClass('taketopCard');
-        var $lastChild = $('#deck').children(':last-child');
+        var $lastChild = $deck.children(':last-child');
         var lastChildPosition = $lastChild.position().left;
         var lastChildzIndex = parseInt($lastChild.css('z-index'));
         if ($lastChild.hasClass('showdacard') || $lastChild.hasClass('player') || $lastChild.hasClass('comp_player')) {
-            $obj.appendTo('#deck').css({
+            $obj.appendTo($deck).css({
                 'z-index': lastChildzIndex + 1,
                 "left": lastChildPosition + 23,
                 "top": '32px'
             }).addClass('delt');
         } else {
-            $obj.appendTo('#deck').css({
+            $obj.appendTo($deck).css({
                 'z-index': lastChildzIndex + 1,
                 "left": '200px',
                 "top": '32px'
             }).addClass('delt');
         }
         if (!!player.knocked) {
-            this.preFilteringOfCreateArray($('#area').children(), 'firstPlayer');
+            this.preFilteringOfCreateArray($area.children(), 'firstPlayer');
             player.knocked = false;
             if (!!player.legitimateKnock) {
-                this.preFilteringOfCreateArray($('#comp_area').children(), 'computer');
+                this.preFilteringOfCreateArray(this.$comp_area.children(), 'computer');
                 return false;
             }
         }
 
         if (!!arguments[3]) {
-            this.preFilteringOfCreateArray($('#area').children(), 'findFirstPlayerScore');
+            this.preFilteringOfCreateArray($area.children(), 'findFirstPlayerScore');
             return false;
         }
         if (arguments[2] !== 'donotrun') {
@@ -129,19 +130,22 @@ RUMMY.prototype = {
         var $cardToBeDiscarded = null;
         var showCardObj = null;
         var deadWoodArray = [];
+        var deadWoodMatch = null;
+        var whatToMinusInARow = [];
+        var whatToMinusMatch = [];
+        var whatToMinus = 0; //always a number
 
         var createObjectsGalore = function () {
             var arrOfArrays = that.makeArrayofArrays(withSuit); // returns [["clubs", "two"], ["spades", "two"], ["clubs", "ten"], etc]
-            var filterOutArrayOfArraysObj = that.furtherFilter(arrOfArrays); //returns obj { clubs: ["six"], diamonds: ["three", "ace", "four"], hearts: ["ten", "queen"], etc }
-            var anotherObj = that.originalFilter(filterOutArrayOfArraysObj); // returns obj { clubs: [6], diamonds: [3, 1, 4], hearts: [10, 12], etc }
-            var sortedObjects = that.decideWhichOnesToKeep(anotherObj);
+            var filterOutArrayOfArraysObj = that.furtherFilter(arrOfArrays); // returns obj { clubs: [6], diamonds: [3, 1, 4], hearts: [10, 5, 12], etc } unsorted
+            var sortedObj = that.sortObjOfArrays(filterOutArrayOfArraysObj); // sorts the above arrays within the object
+            var sortedObjects = that.decideWhichOnesToKeep(sortedObj);
             // filtering suits/numbers in order returns object with objects of arrays { keepTheseOnes:{ clubs: [1], diamonds:[]} maybes: {}, possibleDiscard etc}
             var objectsGalore = that.findMatches(sortedObjects); // adds to properties to the object
             return objectsGalore;
         }
 
         objectsGalore = createObjectsGalore();
-        console.log(objectsGalore);
 
 
         if (playerOne === 'topCard') { //does computer player take top Card
@@ -161,40 +165,45 @@ RUMMY.prototype = {
         }
 
         if (playerOne === 'findFirstPlayerScore') { //computer knocked already finding out your score bitch!
-            console.log(total);
-            console.log(compPlayer.score);
             finalScore = total - compPlayer.score;
             if (compPlayer.score === 0) finalScore = finalScore + 20; //if computer scores gin rummy perfect hand
-            console.log(compPlayer.deck);
             showCardObj = this.showYourCardsJoshua(compPlayer.deck);
             this.manipulateTheDom(showCardObj);// manipulate the DOM
             deadWoodArray = this.laySomeDeadwood(true, compPlayer.deck, objectsGalore);
             //compare deadWoodArray to compPlayer.deck
-            this.comparePlayerDeadwoodtoComputerDeck(deadWoodArray, compPlayer.deck, 'joshua');
+            deadWoodMatch = this.compareDeadwood(deadWoodArray, compPlayer.deck, 'joshua');
             // finalScore > 0 ? alert('the computer wins, they score ' + finalScore) : alert('you win and scored ' + Math.abs(finalScore) + 10);
-            finalScore > 0 ? this.makeLoveNotTupperWar(finalScore, playerOne, false) : this.makeLoveNotTupperWar(Math.abs(finalScore) + 10, playerOne, true);
+            if (!!deadWoodMatch){
+               if (deadWoodMatch.inaRow.length) {
+                    whatToMinusInARow = this.addOnYourDeadwoodToOpponet(deadWoodMatch.inaRow, 'inarow');
+                }
+                if (deadWoodMatch.match.length) {
+                    whatToMinusMatch = this.addOnYourDeadwoodToOpponet(deadWoodMatch.match, 'match');                  
+                }
+                whatToMinus = this.loopThroughWhatToMinus(whatToMinusInARow, whatToMinusMatch );        
+                finalScore = finalScore - whatToMinus;
+            }  
+                
+               finalScore > 0 ? this.makeLoveNotTupperWar(finalScore, playerOne, false) : this.makeLoveNotTupperWar(Math.abs(finalScore) + 10, playerOne, true);
+            
+            
             return false;
         }
 
         whatCardToRidThisTime = this.shitPile(objectsGalore.possibleDiscard, objectsGalore.maybes, objectsGalore.oneMatch);
         valueOfCard = this.checkTheValueof(whatCardToRidThisTime, objectsGalore);
         if (valueOfCard) whatCardToRidThisTime = valueOfCard;
-        if (typeof whatCardToRidThisTime === 'number') {
+        if (typeof whatCardToRidThisTime === 'number' ) {          
             finalTotal = total - whatCardToRidThisTime;
             stringToDiscard = "." + this.cardArray[whatCardToRidThisTime - 1];
-            console.log(stringToDiscard);
         } else {
-            if (whatCardToRidThisTime === "shitdick") { 
-                whatCardToRidThisTime = this.findAnything(objectsGalore);             
-            }
+            if (whatCardToRidThisTime === 'shitdick') whatCardToRidThisTime = this.findAnything(objectsGalore);
             finalTotal = total - ((whatCardToRidThisTime[1] > 10) ? 10 : whatCardToRidThisTime[1]);
             whatCardToRidThisTime[1] = '.' + this.cardArray[whatCardToRidThisTime[1] - 1];
-            console.log(whatCardToRidThisTime); //[".clubs", ".ten"]
             stringToDiscard = whatCardToRidThisTime.join(''); //hopefully fixed - should produce .clubs.ten
         }
 
         if (finalTotal < 10 && playerOne !== 'computer') {
-            //alert('computer player');
             computerKnock = true;
             compPlayer.score = computerScore = finalTotal;
             compPlayer.deck = objectsGalore;
@@ -203,18 +212,24 @@ RUMMY.prototype = {
 
         if (playerOne === 'computer') { // this happens when first player knocks and we must find computer score now
             compPlayer.score = computerScore = total;
-            console.log(computerScore);
-            console.log(player.firstPersonScore);
             finalScore = computerScore - player.firstPersonScore;
             if (player.firstPersonScore === 0) finalScore = finalScore + 20;
-            console.log(player.deck);
-            console.log(objectsGalore);
             //finalScore > 0 ? alert('you win your score is ' + finalScore) : alert('you lost the computer scored ' + Math.abs(finalScore) + 10);
             showCardObj = this.showYourCardsJoshua(objectsGalore);
             this.manipulateTheDom(showCardObj);// manipulate the DOM
             //compare deadWoodArray to compPlayer.deck
-            deadWoodArray = this.laySomeDeadwood(false, objectsGalore, player.deck )
-            this.comparePlayerDeadwoodtoComputerDeck(deadWoodArray, objectsGalore, false);
+            deadWoodArray = this.laySomeDeadwood(false, player.deck, objectsGalore )
+            deadWoodMatch = this.compareDeadwood(deadWoodArray, player.deck, false);
+            if (deadWoodMatch){
+               if (deadWoodMatch.inaRow.length) {
+                   whatToMinusInARow = this.addOnYourDeadwoodToOpponet(deadWoodMatch.inaRow, 'inarow')
+               }
+               if (deadWoodMatch.match.length) {
+                   whatToMinusMatch = this.addOnYourDeadwoodToOpponet(deadWoodMatch.match, 'match');                   
+               }
+               whatToMinus = this.loopThroughWhatToMinus(whatToMinusInARow, whatToMinusMatch );        
+               finalScore = finalScore - whatToMinus;
+            }
             
             
             finalScore > 0 ? this.makeLoveNotTupperWar(finalScore, playerOne, true) : this.makeLoveNotTupperWar(finalScore, playerOne, false);
@@ -234,22 +249,10 @@ RUMMY.prototype = {
     },
 
     makeArrayofArrays: function (array) {
-        var length;
-        var another = [];
-        var i;
-        var cardFace = [];
-        var compDeck = array;
-        for (i = 0, length = compDeck.length; i < length; i++) {
-            another = compDeck[i].split(' ');
-            compDeck[i] = another;
-            for (var j = 0; j < compDeck[i].length; j++) {
-                if (j === 1) {
-                    cardFace.push(compDeck[i][j]);
-                }
-            }
-        }
-
-        return compDeck;
+        array.forEach(function(value, i, arr) {
+            arr[i] = value.split(' ');
+        });
+        return array;
     },
 
     doWeTakeTopCard: function ($deck, obj) { //add maybes to it that are two in a row and possible discard that are also two in a row
@@ -307,165 +310,111 @@ RUMMY.prototype = {
     },
 
     findCardtoDiscard: function (eleClass) {
-        return $('#comp_area').find(eleClass).first().addClass('discard');
+        return this.$comp_area.find(eleClass).first().addClass('discard');
     },
 
     furtherFilter: function (arr) {
-        var spades = [],
-            hearts = [],
-            diamonds = [],
-            clubs = [],
-            i,
-            j,
-            obj = {};
-        for (i = 0; i < arr.length; i++) {
-            for (j = 0; j < arr.length; j++) {
-                if (arr[j][0] === "spades") {
-                    spades.push(arr[j][1]);
-                }
-                if (arr[j][0] === "hearts") {
-                    hearts.push(arr[j][1]);
-                }
-                if (arr[j][0] === "diamonds") {
-                    diamonds.push(arr[j][1]);
-                }
-                if (arr[j][0] === "clubs") {
-                    clubs.push(arr[j][1]);
-                }
-            }
-            break;
-        }
-
-        obj.spades = spades || null;
-        obj.hearts = hearts || null;
-        obj.diamonds = diamonds || null;
-        obj.clubs = clubs || null;
-
-        //this.originalFilter(obj);
+        var obj = {};
+        var that = this;
+        arr.forEach(function(value) {
+            if (!obj[value[0]]) obj[value[0]] = [];
+            obj[value[0]].push(that.cardValues[value[1]])   
+        });
         return obj;
     },
 
-    originalFilter: function (object) {
-        var prop;
-        var i;
-        var clubs = [];
-        var spades = [];
-        var diamonds = [];
-        var hearts = [];
-        var obj = {};
-        var that = this;
-
-        for (prop in object) {
-            for (i = 0; i < object[prop].length; i++) {
-                var data = testFunction(object[prop][i]);
-                if (prop === 'clubs') {
-                    clubs[i] = data;
-                }
-
-                if (prop === 'spades') {
-                    spades[i] = data;
-                }
-
-                if (prop === 'diamonds') {
-                    diamonds[i] = data;
-                }
-
-                if (prop === 'hearts') {
-                    hearts[i] = data;
-                }
-            }
-        }
-
-        function loopEm() {
-            for (var j = 0; j < arguments.length; j++) {
-                for (var k = 0; k < arguments[j].length; k++) {
-                    if (arguments[j].length >= 1) {
-                        arguments[j].sort(function (a, b) {
-                            return a - b;
-                        });
-                    }
-                }
-            }
-
-            obj.clubs = arguments[0];
-            obj.spades = arguments[1];
-            obj.diamonds = arguments[2];
-            obj.hearts = arguments[3];
-
-            return obj;
-        }
-
-        function testFunction(value) {
-            return getValues(value);
-        }
-
-
-        function getValues(string) {
-            var prop;
-            for (prop in that.cardValues) {
-                if (prop == string) {
-                    return that.cardValues[prop];
-                }
-            }
-
-        }
-
-        return loopEm(clubs, spades, diamonds, hearts);
-
-        //this.decideWhichOnesToKeep(loopEm(clubs, spades, diamonds, hearts))
+    sortObjOfArrays: function (object) {
+       //// var keys = Object.keys(object);
+        this.each_suit.forEach(function(value) {
+            if (!object[value]) object[value] = [];
+            object[value].sort(function(a, b) {
+                return a - b;
+            });
+        });
+        
+        return object;
     },
+    
+    decideWhichOnesToKeep:function (obj) {
+	var keepTheseOnes = {};
+	var maybes = {};
+	var possibleDiscard = {};
+	var keys = Object.keys(obj);
+	var arrr = [];
+	
+	var checkToSeeIfItsInArray = function (prev, val, next) {
+            var prevInArray = false;
+            var valInArray = false;
+            var nextInArray = false;
+            arrr.forEach(function (value) {
+                    if (value == prev) prevInArray = true;
+                    if (value == val) valInArray = true;
+                    if (value == next) nextInArray = true;
+            });
 
-    decideWhichOnesToKeep: function (obj) {
-        var keepTheseOnes = {};
-        var maybes = {};
-        var possibleDiscard = {};
-
-        for (var prop in obj) {
-            keepTheseOnes[prop] = [];
-            maybes[prop] = [];
-            possibleDiscard[prop] = [];
-            for (var i = 0; i < obj[prop].length; i++) {
-                if ((obj[prop][i + 1] === obj[prop][i] + 1) && (obj[prop][i + 2] === obj[prop][i] + 2) && (obj[prop][i + 3] === obj[prop][i] + 3) && (obj[prop][i + 4] === obj[prop][i] + 4) && (obj[prop][i + 5] === obj[prop][i] + 5)) {
-                    keepTheseOnes[prop].push(obj[prop][i], obj[prop][i] + 1, obj[prop][i] + 2, obj[prop][i] + 3, obj[prop][i] + 4, obj[prop][i] + 5);
-                    i = i + 5;
-                } else if ((obj[prop][i + 1] === obj[prop][i] + 1) && (obj[prop][i + 2] === obj[prop][i] + 2) && (obj[prop][i + 3] === obj[prop][i] + 3) && (obj[prop][i + 4] === obj[prop][i] + 4)) {
-                    keepTheseOnes[prop].push(obj[prop][i], obj[prop][i] + 1, obj[prop][i] + 2, obj[prop][i] + 3, obj[prop][i] + 4);
-                    i = i + 4;
-                } else if ((obj[prop][i + 1] === obj[prop][i] + 1) && (obj[prop][i + 2] === obj[prop][i] + 2) && (obj[prop][i + 3] === obj[prop][i] + 3)) {
-                    keepTheseOnes[prop].push(obj[prop][i], obj[prop][i] + 1, obj[prop][i] + 2, obj[prop][i] + 3);
-                    i = i + 3;
-                } else if ((obj[prop][i + 1] === obj[prop][i] + 1) && (obj[prop][i + 2] === obj[prop][i] + 2)) {
-                    keepTheseOnes[prop].push(obj[prop][i], obj[prop][i] + 1, obj[prop][i] + 2);
-                    i = i + 2;
-                } else if ((obj[prop][i + 1] === obj[prop][i] + 1) && obj[prop][i + 1] < 7) {
-                    maybes[prop].push(obj[prop][i], obj[prop][i] + 1);
-                    i++;
-                } else {
-                    possibleDiscard[prop][i] = obj[prop][i];
-                }
-            }
-        }
-
-        function removeUndefineds(obj) {
-            var otherObj = {};
-            for (var prop in obj) {
-                otherObj[prop] = obj[prop].filter(function (n) {
-                    return n !== undefined;
+            if (!prevInArray) arrr.push(prev)
+            if (!valInArray) arrr.push(val)
+            if (!nextInArray) arrr.push(next)
+	};
+	
+	var getDifference = function (arr1, arr2) {
+            var ret = [];
+            arr1.forEach(function(value) {
+                    if(arr2.indexOf(value) == -1) {
+                            ret.push(value);   
+                    }     
+            });
+            return ret;
+	};
+	
+        keys.forEach(function (value) {
+            keepTheseOnes[value] = keepTheseOnes[value] || [];
+            possibleDiscard[value] = possibleDiscard[value] || [];
+            maybes[value] = maybes[value] || [];
+            if (obj[value].length) {
+                if (obj[value].length ==1) possibleDiscard[value].push(obj[value][0]);
+                obj[value].reduce(function (prevValue, current, index, arr) {
+                    if (((current - prevValue) ==1) || ((current + 1) == arr[index+1]) ) {
+                        if (arr[0] +1 == arr[1] && arr[0] == prevValue) {
+                            keepTheseOnes[value].push(prevValue, current);
+                        } else {
+                            if (arr[0] + 1 != arr[1] && index == 1) {
+                                    possibleDiscard[value].push(arr[0]);
+                            }
+                            keepTheseOnes[value].push(current);  
+                        }
+                    } else {
+                        if (index ==1) {
+                            possibleDiscard[value].push(prevValue, current);
+                        } else {
+                            possibleDiscard[value].push(current);
+                        }
+                    }
+                    return arr[index];
                 });
             }
+		
+            keepTheseOnes[value].forEach(function (value, i, arr) {
+                if (((value - 1) === arr[i-1]) && ((value +1) == arr[i+1])) {
+                   checkToSeeIfItsInArray(value -1, value, value + 1);        
+                }
+            });
+		
+            maybes[value] = getDifference(keepTheseOnes[value], arrr);
+            keepTheseOnes[value] = arrr;
+            arrr = [];
+	});
+        
+	
+	return {
+		keepTheseOnes: keepTheseOnes,
+		maybes: maybes,
+		possibleDiscard: possibleDiscard
+	}
 
-            return otherObj;
-        }
-
-        return {
-            keepTheseOnes: keepTheseOnes,
-            maybes: maybes,
-            possibleDiscard: removeUndefineds(possibleDiscard)
-        };
-
-    },
-
-    shitPile: function (discardObj, maybeObj) {
+    }, 
+    
+    shitPile: function () {
         var arr = [];
         var i = 0;
         var prop;
@@ -505,34 +454,28 @@ RUMMY.prototype = {
 
     findMatches: function (objOfObjects) {
         var properties = this.each_suit;
-        var propertyLength = properties.length;
         var testArray = [];
         var keepArray = [];
-        var analyzeKeepTheseOnes = function (j) {
-            var i = 0,
-                first,
-                last;
-            for (i; i < propertyLength; i++) {
-                if (objOfObjects[j][properties[i]].length > 3) {
-                    first = objOfObjects[j][properties[i]][0];
-                    last = objOfObjects[j][properties[i]][objOfObjects[j][properties[i]].length - 1];
-                    keepArray.push(first, last);
-                }
-            }
-        };
-
-
-        for (var j in objOfObjects) {
-            if (j === "keepTheseOnes") {
-                analyzeKeepTheseOnes(j)
-            } else {
-                for (var k = 0; k < propertyLength; k++) {
-                    for (var i = 0; i < objOfObjects[j][properties[k]].length; i++) {
-                        testArray.push(objOfObjects[j][properties[k]][i]);
+        var keysOfObjects = Object.keys(objOfObjects);
+        
+        keysOfObjects.forEach(function (value, i, arr) {
+            if (value === "keepTheseOnes") {
+                properties.forEach(function (val, index, array) {					
+                    var first, last;
+                    if(objOfObjects[value][val].length > 3){
+                        first = objOfObjects[value][val][0];
+                        last =  objOfObjects[value][val][objOfObjects[value][val].length - 1];
+                        keepArray.push(first, last);
                     }
-                }
+                });
+            } else {
+                properties.forEach(function (val, index, arrary) {
+                    objOfObjects[value][val].forEach(function(v, ind, ar) {
+                            testArray.push(v);
+                    });
+                });
             }
-        }
+        });
 
         testArray.sort(function (a, b) {
             return a - b;
@@ -572,8 +515,8 @@ RUMMY.prototype = {
         var matches = findDupes(testArray);
 
         if (!!matches) {
-            compareWithkeepArray();
-            removeFromDiscard(objOfObjects.oneMatch, objOfObjects.moreThanOneMatch);
+            var keepArrayMatches = compareWithkeepArray();
+            removeFromDiscard(objOfObjects.oneMatch, objOfObjects.moreThanOneMatch, keepArrayMatches);
             return objOfObjects;
         } else {
             return objOfObjects;
@@ -582,8 +525,6 @@ RUMMY.prototype = {
 
         function removeFromDiscard(arr1, arry2) {
             var arr = arr1.concat(arry2);
-            var x = -1;
-
             function loop(j, discardOrMaybe) {
                 for (var prop in objOfObjects[discardOrMaybe]) {
                     for (var i = 0; i < objOfObjects[discardOrMaybe][prop].length; i++)
@@ -606,7 +547,7 @@ RUMMY.prototype = {
                 var endSecondLoop = loop(0, 'maybes');
             }
 
-            if (endSecondLoop == "maybes") {
+            if (endSecondLoop == "maybes" && arguments[2]) {
                 loop(0, 'keepTheseOnes');
             }
         }
@@ -614,6 +555,8 @@ RUMMY.prototype = {
 
         function compareWithkeepArray() {
             var i = 0;
+            var arrrrrrray = [];
+            var matchMade = false;
             var doeTheyMatch = function (num) {
                 if (num === keepArray[0]) {
                     return keepArray[0]
@@ -638,13 +581,14 @@ RUMMY.prototype = {
                 if (!!freshFeeling) {
                     objOfObjects.oneMatch.splice(i, 1);
                     objOfObjects.moreThanOneMatch.push(freshFeeling);
-                    objOfObjects.moreThanOneMatch.sort();
-                    return true;
-
+                    objOfObjects.moreThanOneMatch.sort(function(a,b) {return a-b});
+                    matchMade = true;
+                    arrrrrrray.push(freshFeeling);
+                    
                 }
                 i++
             }
-
+            if (matchMade) return arrrrrrray;
         }
 
     },
@@ -710,9 +654,6 @@ RUMMY.prototype = {
         };
         var didWeFindAnything = findMultiples(keepObj);
         if (!!didWeFindAnything.length) {
-            // if (first.length > 2 || last.length > 2) {
-            //     return false;
-            //}
             return compareToOneMatch(oneMatch);
         } else {
             return false;
@@ -734,14 +675,24 @@ RUMMY.prototype = {
         var arr = [];
         for (var prop in obj.possibleDiscard) {
             for (var i =0; i<obj.possibleDiscard[prop].length; i++) {
-               return arr.push(prop, obj.possibleDiscard[prop][i] )
+               arr.push(prop, obj.possibleDiscard[prop][i] )
+               return arr;
+                
+            }
+        }
+        
+        for (var properti in obj.maybes) {
+            for (var k =0; k<obj.maybes[properti].length; k++) {
+               arr.push(prop, obj.maybes[properti][k] )
+               return arr;
                 
             }
         }
         
         for (var property in obj.keepTheseOnes) {
-            for (var j =0; j<obj.keepTheseOnes[property].length; j++) { 
-              return arr.push(property, obj.keepTheseOnes[property][j] )
+            for (var j =0; j<obj.keepTheseOnes[property].length; j++) {        
+              arr.push(property, obj.keepTheseOnes[property][j]);
+              return arr;
             }
         }
         
@@ -749,17 +700,11 @@ RUMMY.prototype = {
 
     checkScore: function (obj) {
         var keys = Object.keys(obj);
-        var suits = ['clubs', 'diamonds', 'hearts', 'spades'];
-        var suitLength = suits.length;
         var keyLength = keys.length;
         var i = 0;
-        var k = 0;
-        var p = 0;
         var totalCountAll = [];
-        var total;
 
         function addUpValues(arr) {
-            var length = arr.length;
             var value = 0;
             var i = 0;
             for (i = 0; i < arr.length; i++) {
@@ -816,30 +761,37 @@ RUMMY.prototype = {
 
     makeLoveNotTupperWar: function (score, string, win) {
         var obj = {};
-        obj.heading = win ? "Congratulations You Won " : "Sorry you lost";
+        obj.heading = win ? "Congratulations You Won this hand " : "Sorry you lost this hand";
         obj.win = win ? "You" : "Joshua";
         obj.text = string === 'findFirstPlayerScore' ? obj.win + ' scored ' + score + ' points' : obj.win + ' scored ' + score + ' points';
         obj.score = score;
-
-
+        obj.total = this.getExistingWinnerTotal(obj.win) + obj.score;
         this.overlay(obj);
     },
     
-    
-    showYourCardsJoshua: function (obj, joshuaKnocked) {
-        var layDeadwood = true;
-        if (joshuaKnocked) {
-            layDeadwood = false;
-            //we can not lay deadwood
+    getExistingWinnerTotal: function (winner) {
+        if (localStorage[winner]) {
+            var values = localStorage[winner].split(',');
+            var total = 0;
+            values.forEach(function(val) {
+                total += parseInt(val);
+            });
+            return total;
         }
+        return 0;
+    },
+    
+    
+    showYourCardsJoshua: function (obj) {
+
        // http://jsfiddle.net/fv6Ls7fg/1/ http://jsfiddle.net/fv6Ls7fg/2/
-       
+        var that = this;
         var stackCardsBeforeDeadwood = function () {
             var $compPlayer = $('#comp_player');
             var compPlayerMarginLeft = parseInt($compPlayer.css('marginLeft'));
-            var firstCardLeft = parseInt($compPlayer.find('.wrapper.comp_player').last().css('left'));
-            var leftPosition = compPlayerMarginLeft + firstCardLeft;
-            $('#comp_area').children().removeAttr('style').end().parent().css({'marginLeft': leftPosition, 'top': '15px'});
+            var firstCardLeft = 51 //see dealcards first one will always be 51
+            var leftPosition = compPlayerMarginLeft + firstCardLeft; 
+            that.$comp_area.children().removeAttr('style').end().parent().css({'marginLeft': leftPosition, 'top': '15px'});
 
         };
         
@@ -871,15 +823,7 @@ RUMMY.prototype = {
         }
         
         
-        console.log(matchArray);
         object.match = matchArray;
-        console.log(object);
-        
-       /* return {
-            theRuns: keep,
-            atLeastThree: matchArray
-            
-        } */
         
         return object;
         
@@ -891,7 +835,6 @@ RUMMY.prototype = {
         var $comp = $('#comp_player');
         var $newDom = null;
         var pos = null;
-        console.log(obj);
         var doSomeDomManipulation = function (css_class, $deadWood) {
             if ($deadWood) {
                 $deadWood.children().appendTo($newDom);
@@ -906,20 +849,17 @@ RUMMY.prototype = {
             var width = newDomChildrenLength * 85;
             $newDom.css('width',width); //85 children width
             if (compchildrenLength == 1) {
-               console.log(compPlayer.lastInDeck)
                pos = compPlayer.lastInDeck - width;
-               console.log(pos);
                $newDom.css('left', pos + 'px'); 
             }
             
             if (compchildrenLength == 2) {
                 var last = pos - parseInt($newDom.outerWidth() + 50);
-                console.log(last)
                 $newDom.css('left', last + 'px');
             }
             
             if (compchildrenLength == 3) {
-                $newDom.css('left', '200px');
+                $newDom.css('left', '100px');
             }
             $newDom.appendTo($comp);
         };
@@ -932,7 +872,7 @@ RUMMY.prototype = {
         var whatToDoWithTheRest = function ($compArea) {
             var $children = $compArea.children();
             var compareaChildrenLength = $children.length;
-            var mostLeft = parseInt($comp.children().last().css('left'));
+            //var mostLeft = parseInt($comp.children().last().css('left'));
             $newDom = createSection('leftovers');
             doSomeDomManipulation('.wrapper',$compArea );
             $newDom.css({'left': '-85px', 'width': (compareaChildrenLength * 85) + 'px'} );
@@ -945,7 +885,6 @@ RUMMY.prototype = {
                 for (var i=0; i<obj[prop].length; i++) {
                     doSomeDomManipulation(obj[prop][i]);
                 }
-                console.log($newDom);
                 figureOutChildrenAndPlacement(obj[prop].length, $newDom);
             }           
         }
@@ -955,26 +894,26 @@ RUMMY.prototype = {
         for (var j=0; j<match.length; j++) {
             var property = 'match' + j;
             $newDom = createSection(property);
-            console.log(match[j]);
             doSomeDomManipulation(match[j]);
             figureOutChildrenAndPlacement(null, $newDom);
         }
         
-        whatToDoWithTheRest($('#comp_area'));
+        whatToDoWithTheRest(this.$comp_area);
         //what do we do with deadwood?
          
             
     },
     
     laySomeDeadwood: function (joshuKnocked, Knocker, notKnocker) {
-        console.log(Knocker);
-        console.log(notKnocker);
-        var $area = $('#area');
+        var $area = null;
         var deadWooodCardsArray = [];
+        var that = this;
         var findOneMatch = function (whatToFind) {
             for (var i=0; i<whatToFind.length; i++) {
                 for(var j=0; j<2; j++) { // 2 is a match bitch!!!!
-                    deadWooodCardsArray.push($area.find("[data-value="+whatToFind[i]+"]").eq(j).attr('class').split(' ')[0] + ' ' +whatToFind[i]);
+                    var numberToLetters = "."+that.cardArray[whatToFind[i] - 1];
+                    deadWooodCardsArray.push($area.find(numberToLetters).eq(j).attr('class').split(' ')[0] + ' ' +whatToFind[i]);  // or at end + numberToLetters 
+                   // deadWooodCardsArray.push($area.find("[data-value="+whatToFind[i]+"]").eq(j).attr('class').split(' ')[0] + ' ' +whatToFind[i]);
                 }
             }
         };
@@ -982,6 +921,7 @@ RUMMY.prototype = {
         var findMaybesOrPossibleDiscards = function (whatToFind) {
             for (var prop in whatToFind )
                 for (var i=0; i<whatToFind[prop].length; i++) {
+                   // var addAString = (parseInt(whatToFind[prop][i] > 9)) ? whatToFind[prop][i] : "0"+whatToFind[prop][i];
                     deadWooodCardsArray.push(prop + ' ' +whatToFind[prop][i] )
                 }
         }
@@ -999,33 +939,45 @@ RUMMY.prototype = {
         
         
         if (joshuKnocked) {
-            console.log('computer knocked');
+            $area = this.$area;
            return giveFirstPlayerHints(notKnocker);
         } else {
-            console.log('first player knocked');
-           return giveFirstPlayerHints(Knocker);
+            $area = $('.leftovers')
+           return giveFirstPlayerHints(notKnocker);
         }
         
 
     },
     
-    comparePlayerDeadwoodtoComputerDeck: function (deadwood, compDeck, joshua) {
-        var moreThanOneMatch = compDeck.moreThanOneMatch
-        var inARow = compDeck.keepTheseOnes;
+    compareDeadwood: function (deadwood, deck, joshua) {
+        var moreThanOneMatch = deck.moreThanOneMatch
+        var inARow = deck.keepTheseOnes;
         var deadlength = deadwood.length;
+        var matches = false;
+        
+        // make utility function
+        var extractNumber = function (deadString) {
+            return parseInt(deadString.match(/\d+/));
+        };
+        
+        // make utility function
+        var extractString = function (strWithNum) {
+            var strIndex = strWithNum.indexOf(" ");
+            return strWithNum.slice(0, strIndex);
+        };
+        
         var canWeAddToExistingMatch = function () {
             var arr =[];
             var compareIt = function (number) {
-                for (var i=0; i<moreThanOneMatch.length; i++) {
-                    if (number === moreThanOneMatch[i]) {
-                        return moreThanOneMatch[i]
+                for (var j=0; j<moreThanOneMatch.length; j++) {
+                    if (number === moreThanOneMatch[j]) {
+                        return moreThanOneMatch[j]
                     }
-                    return false;
                 }
+                return false;
             };
             for (var i=0; i<deadlength; i++) {
-                var it = parseInt(deadwood[i][deadwood[i].length - 1]);
-                console.log(it)
+                var it = extractNumber(deadwood[i])
                 var existingMatch = compareIt(it);
                 if(existingMatch) {
                     arr.push(deadwood[i]);
@@ -1042,47 +994,122 @@ RUMMY.prototype = {
         
         var canWeAddtoKeepTheseOnes = function () {
                 var arr = [];
+                var valueOrFalse = null;
                 var comparison = function (prop, numb) {
                     for(var j=0; j<deadlength; j++) {
-                      var sliceString = deadwood[i].slice(0, deadwood[i].length -2);
-                      var getNum = parseInt(deadwood[i][deadwood[i].length - 1]);
-                      console.log(sliceString)
-                      if (sliceString == prop && getNum == numb  ) {
-                          return deadwood[i];
+                      var sliceString = extractString(deadwood[j]);                     
+                      var getNum = extractNumber(deadwood[j]);
+                      if (sliceString == prop) {
+                         if (getNum == (numb-1 ) || getNum == (numb+1))
+                         return deadwood[j];
                       }
                     }
-                }
+                    return false;
+                };
                 
                 for (var prop in inARow) {
                     for (var i=0; i<inARow[prop].length; i++) {
-                       comparison(prop,inARow[prop][i])
-                    }
+                       valueOrFalse = comparison(prop,inARow[prop][i]);
+                       if (!!valueOrFalse) arr.push(valueOrFalse);
+                    }          
+                }
+                
+                if (arr.length) {
+                    return arr
+                } else {
+                    return false;
                 }
         };
-        console.log(deadwood);
         var addToExistingMatch = canWeAddToExistingMatch();
-        if (addToExistingMatch && !!joshua) {
+        var addOnToInARow = canWeAddtoKeepTheseOnes();
+        if ((addToExistingMatch && !!joshua) || (addOnToInARow && !!joshua) ) {
+            matches = true;
             //do some dom manipulation give user hin by animating card or something if they click then deduct points off score
         } 
         
-        if (addToExistingMatch && !joshua) { // player knocked first
+        if (addToExistingMatch && !joshua || addOnToInARow && !joshua ) { // player knocked first
+            matches = true;
+            console.log(addToExistingMatch); //fix this
             // no hints needed just do some animation and have joshua slide his card over to main deck maybe
+        }
+        
+        if (!!matches) {
+            return {
+                johsua:joshua,
+                match:addToExistingMatch || [],
+                inaRow: addOnToInARow || []
+            }
+            
+        } else {
+            return matches; // false
         }
         
         
     },
     
+    addOnYourDeadwoodToOpponet: function (arr, str) {
+        var that = this;
+        var num = null;
+        var numArray = [];
+        var extractNumber = function (deadString) {
+                return parseInt(deadString.match(/\d+/));
+        };
+        var extractString = function (strWithNum) {
+            var strIndex = strWithNum.indexOf(" ");
+            return strWithNum.slice(0, strIndex);
+        };
+        if (str == 'match') {           
+            arr.forEach(function(val) {
+               num = extractNumber(val);
+               var string = that.cardArray[num - 1]
+               $('section.leftovers').eq(0).find('.'+string).parent().addClass('zooom');
+               numArray.push(num);
+            }); 
+            return num;
+        } else {
+            arr.forEach(function(val) {
+               num = extractNumber(val);
+               var numString = "."+ that.cardArray[num - 1];
+               var suit = "." + extractString(val);
+               var together = suit + numString;
+               $('section.leftovers').eq(0).find(together).parent().addClass('zooom');
+               numArray.push(num);
+            });
+            
+            return numArray;
+        }
+    },
+    
+    loopThroughWhatToMinus: function (arr1, arr2) {
+        var array = arr1.concat(arr2);
+        var numToReturn = 0;
+        array.forEach(function(val) {
+           var value = (val > 10) ? 10 : val;
+           numToReturn += value;
+        });
+        
+        return numToReturn;
+    },
+    
 
 
-    overlay: function (howsitgonnabe) {
+    overlay: function (howsitgonnabe) { //fix this function
         var $overlay = $('div.overlay'),
             $closeBttn = $overlay.find('button.overlay-close'),
             that = this,
             game_over = document.getElementById('game_over'),
             score = (howsitgonnabe) ? howsitgonnabe.score : null,
+            startNewGame = function () {
+                var $trigger = $('#trigger-overlay');
+                $trigger.empty().addClass('newGAME bubble').text("Start New Match");
+                $trigger.on('click', function (e) {
+                   e.preventDefault();
+                   window.location.reload(); // FIX THIS
+                });
+            },
             toggleOverlay = function (e) {
-                console.log(arguments[0]);
                 (e) ? (e.target) ? e.preventDefault() : '' : '';
+                console.log(e);
                 if ($overlay.hasClass('open')) {
                     $overlay.removeClass('open');
                     $overlay.addClass('close');
@@ -1090,15 +1117,30 @@ RUMMY.prototype = {
                         $overlay.removeClass('close');
                     };
                     $overlay.on(transitionEndEvent, onEndTransitionFn);
-                    $('#intro').fadeOut().next().fadeOut();
+                    $(game_over).fadeOut();
+                    $('#intro').remove();
                 } else if (!($overlay.hasClass('close'))) {
                     $overlay.addClass('open');
                     if (e) {
-                        if (e.heading) {
+                        if (e.heading && e.total < 100) {
                             $('#intro').hide();
                             $(game_over).fadeIn();
                             game_over.querySelector('h1').innerHTML = howsitgonnabe.heading;
                             game_over.querySelector('h2').innerHTML = howsitgonnabe.text;
+                        }
+                        
+                        if (e.heading && e.total >= 100) { //END OF GAME NOT MATCH
+                            $(game_over).fadeIn();
+                            if (howsitgonnabe.win === "You") {
+                                game_over.querySelector('h1').innerHTML = "Congratualations You won the game but I'll get you next time, Gadget! NEXT time!";
+                                game_over.querySelector('h2').innerHTML = "You scored a total of " + howsitgonnabe.total + " points";
+                                that.congratulations(true);
+                            } else { //joshua won
+                                game_over.querySelector('h1').innerHTML = "Joshua and O'Doyle Rules - GAME OVER!";
+                                game_over.querySelector('h2').innerHTML = "Joshua scored a total of " + howsitgonnabe.total + " points";
+                                that.congratulations();
+                            }
+                            return true;
                         }
                     }
                 } else {
@@ -1107,54 +1149,128 @@ RUMMY.prototype = {
 
                 if (e) {
                     if (e.data) {
-                        if (e.data.score) that.updateScore(howsitgonnabe);
+                        if (e.data.score) { //END OF Match
+                            console.log('test');
+                           that.updateScore(howsitgonnabe);
+                           startNewGame();
+                           //create new game
+                        } 
                     }
 
                 }
             };
+    
+        if (howsitgonnabe) {
+           var endOfGame = toggleOverlay(howsitgonnabe);
+           if (endOfGame) return true;
+        } 
 
-
-        if (howsitgonnabe) toggleOverlay(howsitgonnabe);
-
-        //$triggerBttn.on( 'click', toggleOverlay );
         $closeBttn.off('click').on('click', {
             score: score
         }, toggleOverlay);
 
         if (window.localStorage.getItem('modal') !== "falsy") {
+            this.$intoIframe.insertBefore($(game_over))
             toggleOverlay();
             setTimeout(function () {
-                var audio = document.getElementById('shallWePlayAGame');
-                audio.play();
+                document.getElementById('shallWePlayAGame').play();
             }, 2000);
         }
 
         window.localStorage.setItem('modal', "falsy");
-        // window.localStorage.clear() //for testing purposes
+        //window.localStorage.clear() //for testing purposes
+    },
+    
+    congratulations: function (player) {
+        if (player ) {
+           //do some celebration animation 
+        } else {
+            // do something else
+        }
+        
+        window.localStorage.removeItem('You');
+        window.localStorage.removeItem('Joshua');
     },
 
     updateScore: function (obj) {
         var whoWon = obj.win;
+        var whoLost = (obj.win === "You") ? "Joshua" : "You";
         var you = document.getElementById('you');
         var joshua = document.getElementById("joshua");
-        var yourChildren = you.querySelector('div').children.length;
-        var joshuaChildren = joshua.querySelector('div').children.length;
+        var yourChildren = you.querySelector('div').children;
+        var joshuaChildren = joshua.querySelector('div').children;
         var span = document.createElement('span');
-        if (whoWon === "You") {
-            if (yourChildren  == 0) {
-                span.innerHTML = obj.score;
-                you.appendChild(span);
+        var winnerObj = {};
+        var loserObj = {};
+        var overHundred = false;
+
+        var updateSpan = function () {
+            span.innerHTML = obj.score;
+        };
+        
+        var loopThroughSpans = function (spans) {
+            var arr = [];
+            var total = 0;
+            for (var i=0; i<spans.length; i++) {
+                var num = parseInt(spans[i].textContent);
+                arr.push(num);
+                total += num;
             }
+            overHundred = (total >= 100) ? true : false;
+            return {
+                arr:arr,
+                total:total,
+                overOneHundred:overHundred
+            }
+        };
+        if (whoWon === "You") { // refactor this
+                updateSpan();
+                you.querySelector('div').appendChild(span);
+                winnerObj = loopThroughSpans(yourChildren);
+                loserObj = loopThroughSpans(joshuaChildren);
+                you.querySelector('h6').innerHTML = winnerObj.total;
         } else { //duh computer
-                if (joshuaChildren == 0)
-                span.innerHTML = obj.score;
-                joshua.appendChild(span);
+                updateSpan();
+                joshua.querySelector('div').appendChild(span);
+                winnerObj = loopThroughSpans(joshuaChildren);
+                loserObj = loopThroughSpans(yourChildren);
+                joshua.querySelector('h6').innerHTML = winnerObj.total;
         }
         
-        document.getElementById('score').style.display = "block";
+        if (winnerObj.overOneHundred) {
+            $('#score').nextUntil('div.overlay').remove();
+            
+        } 
         
-
-
+        window.localStorage.setItem(whoWon, winnerObj.arr );
+        window.localStorage.setItem(whoLost, loserObj.arr );
+        document.getElementById('score').style.display = "block";
+    },
+    
+    checkLocalStorage: function () {
+        var createSpans = function(arr, id) {
+            var total = 0;
+            arr.forEach(function(val, i, array) {
+                var span = document.createElement('span');
+                span.innerHTML = val;
+                id.querySelector('div').appendChild(span);
+                total += parseInt(val);
+            });
+                id.querySelector('h6').innerHTML = total;
+            
+        };
+        if (window.localStorage.getItem('You') || window.localStorage.getItem('Joshua')) {
+            document.getElementById('score').style.display = "block";
+            if (window.localStorage.getItem('You')) {
+                 var you = window.localStorage.getItem('You').split(',');
+                 createSpans(you, document.getElementById('you'));
+                 //loop through  you and crate spans for each one append to you div
+            }
+            if (window.localStorage.getItem('Joshua')) {
+                var joshua = window.localStorage.getItem('Joshua').split(',');
+                createSpans(joshua, document.getElementById("joshua"));
+            }
+        } 
     },
 
     helpfulHints: function (param) {
@@ -1236,6 +1352,11 @@ rummy.deckofcards = (function (obj) {
 rummy.whole_deck = [];
 rummy.$htmlDeck = null;
 rummy.$bubble = null;
+rummy.$area = $('#area');
+rummy.$comp_area = $('#comp_area');
+rummy.iframeptext = "You will be playing the computer (aka Joshua), with each hand you the player will always go first. Whomever reaches 100 points first will be crowned winner of the game. Below are instructions to the game, you should only see this intro screen once.";
+rummy.iframeh1text = "WELCOME TO GIN RUMMY";
+rummy.$intoIframe = $('<section id="intro"><h1>'+rummy.iframeh1text+'</h1><p>'+rummy.iframeptext+'</p><audio id="shallWePlayAGame" controls="controls"><source src="playgame.wav" type="audio/wav" /></audio><iframe width="1000" height="600" src="http://www.pagat.com/rummy/ginrummy.html"></iframe></section>');
 
 
 var oneTimeEvents = Object.create(rummy);
@@ -1317,9 +1438,11 @@ oneTimeEvents.dealcards = function () {
         var i = 52;
         that.helpfulHints();
         this.className += ' hide';
+        var x = [];
         //check these values on second call of deal cards  and k as well console log those bitches
         var refreshIntervalId = setInterval(function () {
             if (i % 2 === 1) {
+                x.push($doItforTheChildren.eq(i));
                 $doItforTheChildren.eq(i).addClass('player').css({
                     '-webkit-transform': 'translateX(' + (k - 50) + 'px)',
                     'transform': 'translateX(' + (k - 50) + 'px)',
@@ -1338,7 +1461,7 @@ oneTimeEvents.dealcards = function () {
                 that.flipNewDeck('comp', $deck.find('.comp_player'));
                 clearInterval(refreshIntervalId);
             }
-        }, 300); // end setInterval	
+        }, 250); // end setInterval	
     }, false);
 };
 
@@ -1346,9 +1469,6 @@ oneTimeEvents.flipNewDeck = function (whichPlayer, $object) {
     var that = this;
     var iterator = 0;
     if (whichPlayer === 'player') {
-        setTimeout(function () {
-            var top_pos = $object.position().top;
-            top_pos = top_pos; // because of min-height on main content div
             var left = $object.parent().offset().left;
             $('#player').css({
                 position: 'relative',
@@ -1359,13 +1479,12 @@ oneTimeEvents.flipNewDeck = function (whichPlayer, $object) {
                 var obj = $object.get().reverse();
                 $object.addClass('flipchild').children('div').addClass('flip').one(transitionEndEvent, function (event) {
                     iterator++;
-                    $(obj).appendTo('#player #area').removeAttr('style');
+                    $(obj).appendTo(that.$area).removeAttr('style');
                     if (iterator == $(this).length) {
                         that.switchitupyo($object);
                     }
                 });
-            }, 1000);
-        }, 2000);
+            }, 3000);
     } else { //it's computer player
         $object.removeClass('temp');
         setTimeout(function () {
@@ -1377,15 +1496,13 @@ oneTimeEvents.flipNewDeck = function (whichPlayer, $object) {
                 top: -top_pos,
                 marginLeft: (left)
             });
-            $object.appendTo('#comp_player #comp_area');
+            $object.appendTo(that.$comp_area);
         }, 4000);
     }
 };
 
 oneTimeEvents.switchitupyo = function () {
-    var zindex = 52;
-    zindex++;
-    $("#area").sortable({
+    this.$area.sortable({
         axis: "x",
         cursor: "move"
     });
@@ -1396,7 +1513,7 @@ oneTimeEvents.switchitupyo = function () {
 
 oneTimeEvents.dealfirstcard = function () {
     var $deck = this.$htmlDeck;
-    var deck = $deck.get(0); // get last child fix this 3/29
+    var deck = $deck[0]; // get last child fix this 3/29
     var deckLastChild = deck.lastElementChild;
     var that = this;
     var $takeCard = $('#takeCard');
@@ -1431,15 +1548,14 @@ player.firstPersonScore = null;
 player.deck = null;
 
 //this function only gets invoked once while the events below get invoked many times
-player.takeCardEvent = function ($deck, $takefromdeckbutton, $lastChild) {
+player.takeCardEvent = function ($deck, $takefromdeckbutton) {
     var that = this,
         flag = true,
         removeHelpfulHints = function () {
             that.helpfulHints('third');
         };
 
-    var takeFromDeck = (function () {
-        $takefromdeckbutton.on('click', function (ev) {
+        $takefromdeckbutton.on('click', function () {
             this.disabled = true;
             this.nextElementSibling.disabled = false;
             var $topFromDeck = $deck.find('.delt:first').prev() || $deck.find(':last-child').prev();
@@ -1448,16 +1564,16 @@ player.takeCardEvent = function ($deck, $takefromdeckbutton, $lastChild) {
                 'transform': 'translateX(-50px)'
             })
                 .removeStyle('top')
-                .one(transitionEndEvent, function (event) {
+                .one(transitionEndEvent, function () {
                     that.flipCards('new_card', $(this));
                     if (flag) removeHelpfulHints();
                     flag = false;
                 });
+                var $takebutton = $deck.children(':last-child').find('div').children('a.take');
+                $takebutton.hide();
         });
-    }())
 
 
-    var takeTopCard = (function () {
         $deck.on('click', 'a.take', function (event) {
             var takebutton = $takefromdeckbutton.get(0);
             takebutton.disabled = true;
@@ -1469,7 +1585,6 @@ player.takeCardEvent = function ($deck, $takefromdeckbutton, $lastChild) {
             flag = false;
             event.preventDefault();
         });
-    }())
 
 };
 
@@ -1485,17 +1600,15 @@ player.knock = function (knockButton) {
 player.flipCards = function (which_one, $object) {
     var that = this;
     if (which_one === "new_card") {
-        var flag = true;
         $object.addClass('flipchild').children('div').addClass('flip').one(transitionEndEvent, function () {
-            $object.removeClass('temp').prependTo('#player #area').removeAttr('style');
+            $object.removeClass('temp').prependTo(that.$area).removeAttr('style');
             that.playerHover($object, 'one');
         });
     }
 
     if (which_one === "top_card") {
-        var flag = true;
         var currentCard = $object.offset().left;
-        var currentDeck = $('#area').find('section:first-child').offset().left;
+        var currentDeck = this.$area.find('section:first-child').offset().left;
         var whereToGo = (currentDeck - currentCard) - 50;
         whereToGo = ($object.hasClass('showdacard')) ? -49 : whereToGo;
         $object.removeStyle('top').addClass('player temp speedUpAnimation').css({
@@ -1503,7 +1616,7 @@ player.flipCards = function (which_one, $object) {
             'transform': 'translateX(' + whereToGo + 'px)'
         })
             .one(transitionEndEvent, function () {
-                $object.removeClass('showdacard flipit temp').addClass('flipchild').prependTo('#area').removeAttr('style');
+                $object.removeClass('showdacard flipit temp').addClass('flipchild').prependTo(that.$area).removeAttr('style');
                 that.playerHover($object, 'one');
             });
 
@@ -1514,7 +1627,6 @@ player.flipCards = function (which_one, $object) {
 player.playerHover = function (obj) {
     var $objPlusSiblings = obj.siblings().addBack();
     var howManyCards = obj.siblings().length;
-    var that = this;
     if (howManyCards > 9) {
         $objPlusSiblings.find('a').addClass('discard');
     } else {
@@ -1551,20 +1663,21 @@ compPlayer.lastInDeck = null;
 compPlayer.takeNextCard = function () {
     var that = this;
     var $deck = this.$htmlDeck;
-    var lastInHandLeftPos = this.lastCardPos = parseInt($('#comp_area').children(':first-child').css('left'));
+    var $compArea = this.$comp_area;
+    var lastInHandLeftPos = this.lastCardPos = parseInt($compArea.children(':first-child').css('left'));
     if (this.index === 1) {this.lastInDeck = lastInHandLeftPos }
     var pos = this.parentInfoObj.left || lastInHandLeftPos + 50 + 'px';
     var zIndex = this.parentInfoObj.zIndex || 25;
     var $lastInDeck = $deck.find('.delt:first').prev();
     var $topCardShown = $deck.children(':last');
-    var takeTopCard = this.preFilteringOfCreateArray($('#comp_area').children(), 'topCard');
+    var takeTopCard = this.preFilteringOfCreateArray($compArea.children(), 'topCard');
     var $element = (!!takeTopCard) ? $topCardShown : $lastInDeck;
     $element.removeClass('flipchild player speedUpAnimation').addClass('comp_player temp').css({
         'left': pos,
         'top': '-185px',
         'zIndex': zIndex
     }).one(transitionEndEvent, function () {
-        $(this).prependTo('#comp_player #comp_area').removeClass('flipchild');
+        $(this).prependTo($compArea).removeClass('flipchild');
         var $selfAndSiblings = $(this).siblings().andSelf();
         that.preFilteringOfCreateArray($selfAndSiblings);
     });
@@ -1582,4 +1695,5 @@ oneTimeEvents.loopthroughdiv();
 //events
 oneTimeEvents.dealcards();
 oneTimeEvents.reshuffle();
-rummy.overlay(); /* IMPLEMENT LATER */
+rummy.overlay(); 
+rummy.checkLocalStorage();
