@@ -1,8 +1,13 @@
 Gin Rummy
 ========
 
-right now - deck of cards are craeted, shuffled and then dealt to computer player and then player
+version 0.1
+Fully functioning game to 100 points
 
-next steps ahead 
+full verision http://dalydd.com/projects/deckofcards.html
 
-in progress verision http://dalydd.com/projects/deckofcards.html
+additions to be added in future versions
+*start new game
+*congratulations screen
+*off screen menu for functionality
+*better algorithm
