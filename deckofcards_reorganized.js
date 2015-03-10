@@ -102,7 +102,7 @@ RUMMY.prototype = {
     preFilteringOfCreateArray: function ($obj, player) {
         var suitNCardArray = [];
         var computerDeck = [];
-        $obj.children(':first-child').each(function (i, element) {
+        $obj.children(':first-child').each(function () {
             var suit_card_n_value = $(this).attr('class');
             var value = suit_card_n_value.slice(suit_card_n_value.indexOf(' ') + 1, suit_card_n_value.length);
             computerDeck.push(value);
@@ -139,14 +139,16 @@ RUMMY.prototype = {
             var arrOfArrays = that.makeArrayofArrays(withSuit); // returns [["clubs", "two"], ["spades", "two"], ["clubs", "ten"], etc]
             var filterOutArrayOfArraysObj = that.furtherFilter(arrOfArrays); // returns obj { clubs: [6], diamonds: [3, 1, 4], hearts: [10, 5, 12], etc } unsorted
             var sortedObj = that.sortObjOfArrays(filterOutArrayOfArraysObj); // sorts the above arrays within the object
+            console.dir(sortedObj);
             var sortedObjects = that.decideWhichOnesToKeep(sortedObj);
+            console.dir(sortedObjects);
             // filtering suits/numbers in order returns object with objects of arrays { keepTheseOnes:{ clubs: [1], diamonds:[]} maybes: {}, possibleDiscard etc}
             var objectsGalore = that.findMatches(sortedObjects); // adds to properties to the object
             return objectsGalore;
         }
 
         objectsGalore = createObjectsGalore();
-
+        console.dir(objectsGalore);
 
         if (playerOne === 'topCard') { //does computer player take top Card
             return this.doWeTakeTopCard(this.$htmlDeck, objectsGalore);
@@ -335,37 +337,37 @@ RUMMY.prototype = {
         return object;
     },
     
-    decideWhichOnesToKeep:function (obj) {
-	var keepTheseOnes = {};
-	var maybes = {};
-	var possibleDiscard = {};
-	var keys = Object.keys(obj);
-	var arrr = [];
-	
-	var checkToSeeIfItsInArray = function (prev, val, next) {
-            var prevInArray = false;
-            var valInArray = false;
-            var nextInArray = false;
-            arrr.forEach(function (value) {
-                    if (value == prev) prevInArray = true;
-                    if (value == val) valInArray = true;
-                    if (value == next) nextInArray = true;
-            });
+    decideWhichOnesToKeep:function (obj) { //http://jsfiddle.net/9joukzhv/1/
+        var keepTheseOnes = {};
+        var maybes = {};
+        var possibleDiscard = {};
+        var keys = Object.keys(obj);
+        var arrr = [];
 
-            if (!prevInArray) arrr.push(prev)
-            if (!valInArray) arrr.push(val)
-            if (!nextInArray) arrr.push(next)
-	};
-	
-	var getDifference = function (arr1, arr2) {
-            var ret = [];
-            arr1.forEach(function(value) {
-                    if(arr2.indexOf(value) == -1) {
-                            ret.push(value);   
-                    }     
-            });
-            return ret;
-	};
+        var checkToSeeIfItsInArray = function (prev, val, next) {
+                var prevInArray = false;
+                var valInArray = false;
+                var nextInArray = false;
+                arrr.forEach(function (value) {
+                        if (value == prev) prevInArray = true;
+                        if (value == val) valInArray = true;
+                        if (value == next) nextInArray = true;
+                });
+
+                if (!prevInArray) arrr.push(prev)
+                if (!valInArray) arrr.push(val)
+                if (!nextInArray) arrr.push(next)
+        };
+
+        var getDifference = function (arr1, arr2) {
+                var ret = [];
+                arr1.forEach(function(value) {
+                        if(arr2.indexOf(value) == -1) {
+                                ret.push(value);   
+                        }     
+                });
+                return ret;
+        };
 	
         keys.forEach(function (value) {
             keepTheseOnes[value] = keepTheseOnes[value] || [];
@@ -452,20 +454,36 @@ RUMMY.prototype = {
 
     },
 
-    findMatches: function (objOfObjects) {
+    findMatches: function (objOfObjects) { //SOLUTION http://jsfiddle.net/25nh54dp/34/
         var properties = this.each_suit;
         var testArray = [];
         var keepArray = [];
+        var sortDiscard = false;
         var keysOfObjects = Object.keys(objOfObjects);
+        var multipleHandsOneSuit = function (arr, suit) {
+            if (arr.length > 7) return false;
+            arr.some(function (value, index, array) {
+                if (value + 1 !== array[index +1]) {
+                    keepArray.push(array[0], value, array[index +1], array[array.length - 1]);
+                    keepArray.multiple = suit || false;
+                    return keepArray;
+                } 
+            });
+        };
+        keepArray.multiple = false;
         
         keysOfObjects.forEach(function (value, i, arr) {
             if (value === "keepTheseOnes") {
                 properties.forEach(function (val, index, array) {					
                     var first, last;
-                    if(objOfObjects[value][val].length > 3){
-                        first = objOfObjects[value][val][0];
-                        last =  objOfObjects[value][val][objOfObjects[value][val].length - 1];
-                        keepArray.push(first, last);
+                    if(objOfObjects[value][val].length >= 3){
+                        if (objOfObjects[value][val][objOfObjects[value][val].length - 1] - (objOfObjects[value][val][0]) !== objOfObjects[value][val].length - 1) {
+                            multipleHandsOneSuit(objOfObjects[value][val], val);
+                        }  else {
+                            first = objOfObjects[value][val][0];
+                            last =  objOfObjects[value][val][objOfObjects[value][val].length - 1];
+                            keepArray.push(first, last); 
+                        }                  
                     }
                 });
             } else {
@@ -517,6 +535,8 @@ RUMMY.prototype = {
         if (!!matches) {
             var keepArrayMatches = compareWithkeepArray();
             removeFromDiscard(objOfObjects.oneMatch, objOfObjects.moreThanOneMatch, keepArrayMatches);
+            goThroughKeepTheseOnesAgain();
+            if (!!sortDiscard) sortDiscardPile();
             return objOfObjects;
         } else {
             return objOfObjects;
@@ -551,13 +571,37 @@ RUMMY.prototype = {
                 loop(0, 'keepTheseOnes');
             }
         }
+        
+        function goThroughKeepTheseOnesAgain () {
+            var tempArray = [];
+            properties.forEach(function (val, index, array) {
+                objOfObjects.keepTheseOnes[val].forEach(function (value, i, arr) {
+                    if (arr.length < 3) {
+                        if (i == 0 ) {tempArray.push(val);}
+                        objOfObjects.possibleDiscard[val].push(value);
+                        objOfObjects.possibleDiscard[val].sort(function (a, b) {
+                            return a - b;
+                        });
+                    }
+                }); 
+            });
+            tempArray.forEach(function (val, index, array) {
+                    objOfObjects.keepTheseOnes[val] = [];  //EMPTY THAT SHIT OUT YO BUG FIXED!
+            });
+        }
+        
+        function sortDiscardPile () {
+            objOfObjects.possibleDiscard[keepArray.multiple].sort(function (a, b) {
+                return a - b;
+            });
+        }
 
 
         function compareWithkeepArray() {
             var i = 0;
             var arrrrrrray = [];
             var matchMade = false;
-            var doeTheyMatch = function (num) {
+            var doeTheyMatch = function (num) { 
                 if (num === keepArray[0]) {
                     return keepArray[0]
                 }
@@ -567,28 +611,91 @@ RUMMY.prototype = {
                 }
 
                 if (keepArray.length > 2) {
+                    if (num === keepArray[2]) {
+                        return keepArray[2]
+                    }
+
                     if (num === keepArray[3]) {
                         return keepArray[3]
                     }
-
-                    if (num === keepArray[4]) {
-                        return keepArray[4]
-                    }
                 }
-            }
+            };
+            var spliceItOut = function (arr) {
+	           arr.forEach(function (value) {
+		          objOfObjects.oneMatch.forEach(function (val, index, array) {
+                      console.log(val);
+                      if (value === val) {
+                        objOfObjects.oneMatch.splice(index, 1);
+                      }
+		          });	
+                });
+            };
+            var checkKeepArrayMultiple = function (arrrrrrray) {
+                console.log(arrrrrrray);
+                if (!keepArray.multiple) return false;
+                var doYourThing = function (num, arr) {
+                    var index = arr.indexOf(num);
+                    var indexOfKeepArr = keepArray.indexOf(num);
+                    var value;
+                    var odd = false;
+                    var even = false;
+                    console.log(indexOfKeepArr);
+                    var knowYourIndex = function (num, str) {
+                        if (num & 1) {
+                            if (str === "getValue") {
+                             value = keepArray[indexOfKeepArr] - keepArray[indexOfKeepArr-1];
+                             odd = true;
+                            } else {
+                                return "odd"
+                            }
+                        } else {
+                            if (str === "getValue") {
+                                value = keepArray[indexOfKeepArr+1] - keepArray[indexOfKeepArr];
+                                even = true;
+                            } else {
+                                return "even"
+                            }
+                        }
+                        return knowYourIndex;
+                    }
+                    var oddOrEven = knowYourIndex(indexOfKeepArr, 'getValue')(value, 'getOddOrEven');
+                    console.log(oddOrEven);
+                    if (oddOrEven === "odd") return false;
+                    if (!!odd) {
+                        arr.splice(index-2, 2);
+                        objOfObjects.possibleDiscard[keepArray.multiple].push(num-1, num-2);
+                    } else { //even is true
+                        arr.splice(index+1, 2);
+                        objOfObjects.possibleDiscard[keepArray.multiple].push(num+1, num+2);
+                    }
+                    sortDiscard = true;
+                }
+                arrrrrrray.forEach(function (v,i,a) { 
+                    objOfObjects.keepTheseOnes[keepArray.multiple].forEach(function(value, index, array) {
+                            if (v === value ) {
+                                doYourThing(v, array);
+                            }
+                    });
+                });
+            };
+            if (keepArray.length > 4) return false; // they have at least
             while (i < objOfObjects.oneMatch.length) {
                 var freshFeeling = doeTheyMatch(objOfObjects.oneMatch[i]);
                 if (!!freshFeeling) {
-                    objOfObjects.oneMatch.splice(i, 1);
+                    //objOfObjects.oneMatch.splice(i, 1);//fix this
                     objOfObjects.moreThanOneMatch.push(freshFeeling);
                     objOfObjects.moreThanOneMatch.sort(function(a,b) {return a-b});
                     matchMade = true;
                     arrrrrrray.push(freshFeeling);
-                    
                 }
                 i++
             }
-            if (matchMade) return arrrrrrray;
+            if (matchMade) {
+                if (!checkKeepArrayMultiple(arrrrrrray)) {
+                    spliceItOut(keepArray)
+                }
+                return arrrrrrray;
+            }
         }
 
     },
