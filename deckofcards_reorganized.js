@@ -98,7 +98,7 @@ RUMMY.prototype = {
 
     },
 
-    //the funking nuclues oh i dont curse ... bitch
+    //the funking nuclues oh i dont curse ... 
     preFilteringOfCreateArray: function ($obj, player) {
         var suitNCardArray = [];
         var computerDeck = [];
@@ -139,16 +139,16 @@ RUMMY.prototype = {
             var arrOfArrays = that.makeArrayofArrays(withSuit); // returns [["clubs", "two"], ["spades", "two"], ["clubs", "ten"], etc]
             var filterOutArrayOfArraysObj = that.furtherFilter(arrOfArrays); // returns obj { clubs: [6], diamonds: [3, 1, 4], hearts: [10, 5, 12], etc } unsorted
             var sortedObj = that.sortObjOfArrays(filterOutArrayOfArraysObj); // sorts the above arrays within the object
-            console.dir(sortedObj);
+            //console.dir(sortedObj);
             var sortedObjects = that.decideWhichOnesToKeep(sortedObj);
-            console.dir(sortedObjects);
+            //console.dir(sortedObjects);
             // filtering suits/numbers in order returns object with objects of arrays { keepTheseOnes:{ clubs: [1], diamonds:[]} maybes: {}, possibleDiscard etc}
             var objectsGalore = that.findMatches(sortedObjects); // adds to properties to the object
             return objectsGalore;
         }
 
         objectsGalore = createObjectsGalore();
-        console.dir(objectsGalore);
+        //console.dir(objectsGalore);
 
         if (playerOne === 'topCard') { //does computer player take top Card
             return this.doWeTakeTopCard(this.$htmlDeck, objectsGalore);
@@ -166,7 +166,7 @@ RUMMY.prototype = {
             return false;
         }
 
-        if (playerOne === 'findFirstPlayerScore') { //computer knocked already finding out your score bitch!
+        if (playerOne === 'findFirstPlayerScore') { //computer knocked already finding out your score 
             finalScore = total - compPlayer.score;
             if (compPlayer.score === 0) finalScore = finalScore + 20; //if computer scores gin rummy perfect hand
             showCardObj = this.showYourCardsJoshua(compPlayer.deck);
@@ -873,7 +873,9 @@ RUMMY.prototype = {
         obj.text = string === 'findFirstPlayerScore' ? obj.win + ' scored ' + score + ' points' : obj.win + ' scored ' + score + ' points';
         obj.score = score;
         obj.total = this.getExistingWinnerTotal(obj.win) + obj.score;
+        console.log('calledmakeloveNotupper')
         this.overlay(obj);
+        
     },
     
     getExistingWinnerTotal: function (winner) {
@@ -1017,7 +1019,7 @@ RUMMY.prototype = {
         var that = this;
         var findOneMatch = function (whatToFind) {
             for (var i=0; i<whatToFind.length; i++) {
-                for(var j=0; j<2; j++) { // 2 is a match bitch!!!!
+                for(var j=0; j<2; j++) { // 2 is a match 
                     var numberToLetters = "."+that.cardArray[whatToFind[i] - 1];
                     deadWooodCardsArray.push($area.find(numberToLetters).eq(j).attr('class').split(' ')[0] + ' ' +whatToFind[i]);  // or at end + numberToLetters 
                    // deadWooodCardsArray.push($area.find("[data-value="+whatToFind[i]+"]").eq(j).attr('class').split(' ')[0] + ' ' +whatToFind[i]);
@@ -1201,6 +1203,7 @@ RUMMY.prototype = {
 
 
     overlay: function (howsitgonnabe) { //fix this function
+        console.log('overlay called')
         var $overlay = $('div.overlay'),
             $closeBttn = $overlay.find('button.overlay-close'),
             that = this,
@@ -1226,8 +1229,10 @@ RUMMY.prototype = {
                     $overlay.on(transitionEndEvent, onEndTransitionFn);
                     $(game_over).fadeOut();
                     $('#intro').remove();
+                    console.log('open');
                 } else if (!($overlay.hasClass('close'))) {
                     $overlay.addClass('open');
+                    console.log('close')
                     if (e) {
                         if (e.heading && e.total < 100) {
                             $('#intro').hide();
@@ -1546,7 +1551,7 @@ oneTimeEvents.dealcards = function () {
         that.helpfulHints();
         this.className += ' hide';
         var x = [];
-        //check these values on second call of deal cards  and k as well console log those bitches
+        //check these values on second call of deal cards  and k as well console log those 
         var refreshIntervalId = setInterval(function () {
             if (i % 2 === 1) {
                 x.push($doItforTheChildren.eq(i));
