@@ -199,7 +199,7 @@ RUMMY.prototype = {
             finalTotal = total - whatCardToRidThisTime;
             stringToDiscard = "." + this.cardArray[whatCardToRidThisTime - 1];
         } else {
-            if (whatCardToRidThisTime === 'shitdick') whatCardToRidThisTime = this.findAnything(objectsGalore);
+            if (whatCardToRidThisTime === 'stringz') whatCardToRidThisTime = this.findAnything(objectsGalore);
             finalTotal = total - ((whatCardToRidThisTime[1] > 10) ? 10 : whatCardToRidThisTime[1]);
             whatCardToRidThisTime[1] = '.' + this.cardArray[whatCardToRidThisTime[1] - 1];
             stringToDiscard = whatCardToRidThisTime.join(''); //hopefully fixed - should produce .clubs.ten
@@ -449,7 +449,7 @@ RUMMY.prototype = {
         }
 
         arr = looping(8, i);
-        return arr || 'shitdick';
+        return arr || 'stringz';
 
 
     },
