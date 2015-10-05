@@ -56,7 +56,6 @@ var transitionEndEvent = (function () {
 function RUMMY() {}
 RUMMY.prototype = {
 
-
     discard: function ($discard, $obj) {      
         $discard.removeClass('discard');
         var $siblings = $obj.siblings();
@@ -128,16 +127,8 @@ RUMMY.prototype = {
         var valueOfCard = null;
         var stringToDiscard = null;
         var finalTotal = null;
-        var computerScore = 0;
-        var finalScore = 0;
         var $frontSideOfCardToBeDiscarded = null;
         var $cardToBeDiscarded = null;
-        var showCardObj = null;
-        var deadWoodArray = [];
-        var deadWoodMatch = null;
-        var whatToMinusInARow = [];
-        var whatToMinusMatch = [];
-        var whatToMinus = 0; //always a number
 
         var createObjectsGalore = function () {
             var filterOutArrayOfArraysObj = that.furtherFilter(withSuit); // returns obj { clubs: [6], diamonds: [3, 1, 4], hearts: [10, 5, 12], etc } unsorted
@@ -146,12 +137,11 @@ RUMMY.prototype = {
             var sortedObjects = that.decideWhichOnesToKeep(sortedObj);
             //console.dir(sortedObjects);
             // filtering suits/numbers in order returns object with objects of arrays { keepTheseOnes:{ clubs: [1], diamonds:[]} maybes: {}, possibleDiscard etc}
-            var objectsGalore = that.findMatches(sortedObjects); // adds to properties to the object
+            var objectsGalore = that.findMatches(sortedObjects, playerOne); // adds to properties to the object
             return objectsGalore;
         };
 
         objectsGalore = createObjectsGalore();
-        //console.dir(objectsGalore);
 
         if (playerOne === 'topCard') { //does computer player take top Card
             return this.doWeTakeTopCard(this.$htmlDeck, objectsGalore);
@@ -168,82 +158,38 @@ RUMMY.prototype = {
             }
             return false;
         }
-
-        if (playerOne === 'findFirstPlayerScore') { //computer knocked already finding out your score 
-            finalScore = total - compPlayer.score;
-            if (compPlayer.score === 0) finalScore = finalScore + 20; //if computer scores gin rummy perfect hand
-            showCardObj = this.showYourCardsJoshua(compPlayer.deck);
-            this.manipulateTheDom(showCardObj);// manipulate the DOM
-            deadWoodArray = this.laySomeDeadwood(true, compPlayer.deck, objectsGalore);
-            //compare deadWoodArray to compPlayer.deck
-            deadWoodMatch = this.compareDeadwood(deadWoodArray, compPlayer.deck, 'joshua');
-            // finalScore > 0 ? alert('the computer wins, they score ' + finalScore) : alert('you win and scored ' + Math.abs(finalScore) + 10);
-            if (!!deadWoodMatch){
-               if (deadWoodMatch.inaRow.length) {
-                    whatToMinusInARow = this.addOnYourDeadwoodToOpponet(deadWoodMatch.inaRow, 'inarow');
-                }
-                if (deadWoodMatch.match.length) {
-                    whatToMinusMatch = this.addOnYourDeadwoodToOpponet(deadWoodMatch.match, 'match');                  
-                }
-                whatToMinus = this.loopThroughWhatToMinus(whatToMinusInARow, whatToMinusMatch );        
-                finalScore = finalScore - whatToMinus;
-            }  
-                
-               finalScore > 0 ? this.makeLoveNotTupperWar(finalScore, playerOne, false) : this.makeLoveNotTupperWar(Math.abs(finalScore) + 10, playerOne, true);
-            
-            
+        
+        if (this.beginningOfTheEnd(playerOne, total, objectsGalore)){
             return false;
-        }
+        } 
 
         whatCardToRidThisTime = this.shitPile(objectsGalore.possibleDiscard, objectsGalore.maybes, objectsGalore.oneMatch);
+        console.log(whatCardToRidThisTime);
         valueOfCard = this.checkTheValueof(whatCardToRidThisTime, objectsGalore); 
+        console.log(valueOfCard);
+        console.log(total);
         if (valueOfCard) whatCardToRidThisTime = valueOfCard;
         if (typeof whatCardToRidThisTime === 'number' ) {          
             finalTotal = total - whatCardToRidThisTime;
             stringToDiscard = "." + this.cardArray[whatCardToRidThisTime - 1];
         } else {
-            if (whatCardToRidThisTime === 'stringz') whatCardToRidThisTime = this.findAnything(objectsGalore);
+            if (whatCardToRidThisTime === 'wtf') whatCardToRidThisTime = this.findAnything(objectsGalore);
             finalTotal = total - ((whatCardToRidThisTime[1] > 10) ? 10 : whatCardToRidThisTime[1]);
             whatCardToRidThisTime[1] = '.' + this.cardArray[whatCardToRidThisTime[1] - 1];
             stringToDiscard = whatCardToRidThisTime.join(''); //hopefully fixed - should produce .clubs.ten
             
         }
-
+        console.log(finalTotal);
         if (finalTotal < 10 && playerOne !== 'computer') {
             computerKnock = true;
-            compPlayer.score = computerScore = finalTotal;
+            compPlayer.score = finalTotal;
             compPlayer.deck = objectsGalore;
             
         }
 
-        if (playerOne === 'computer') { // this happens when first player knocks and we must find computer score now
-            compPlayer.score = computerScore = total;
-            finalScore = computerScore - player.firstPersonScore;
-            if (player.firstPersonScore === 0) finalScore = finalScore + 20;
-            //finalScore > 0 ? alert('you win your score is ' + finalScore) : alert('you lost the computer scored ' + Math.abs(finalScore) + 10);
-            showCardObj = this.showYourCardsJoshua(objectsGalore);
-            this.manipulateTheDom(showCardObj);// manipulate the DOM
-            //compare deadWoodArray to compPlayer.deck
-            deadWoodArray = this.laySomeDeadwood(false, player.deck, objectsGalore );
-            deadWoodMatch = this.compareDeadwood(deadWoodArray, player.deck, false);
-            if (deadWoodMatch){
-               if (deadWoodMatch.inaRow.length) {
-                   whatToMinusInARow = this.addOnYourDeadwoodToOpponet(deadWoodMatch.inaRow, 'inarow');
-               }
-               if (deadWoodMatch.match.length) {
-                   whatToMinusMatch = this.addOnYourDeadwoodToOpponet(deadWoodMatch.match, 'match');                   
-               }
-               whatToMinus = this.loopThroughWhatToMinus(whatToMinusInARow, whatToMinusMatch );        
-               finalScore = finalScore - whatToMinus;
-            }
-            
-            
-            finalScore > 0 ? this.makeLoveNotTupperWar(finalScore, playerOne, true) : this.makeLoveNotTupperWar(finalScore, playerOne, false);
-            return false;
-        }
+
         
         $frontSideOfCardToBeDiscarded = this.findCardtoDiscard(stringToDiscard, objectsGalore.keepTheseOnes, typeof whatCardToRidThisTime === 'number' ? whatCardToRidThisTime : null); 
-        ////FIX THIS FUCKING BUGG|!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         $cardToBeDiscarded = $frontSideOfCardToBeDiscarded.parent();
         compPlayer.parentInfoObj = this.getStyles($cardToBeDiscarded);
         $frontSideOfCardToBeDiscarded.addClass('taketopCard').find('a').text(this.takeCard).addClass('take');
@@ -253,13 +199,6 @@ RUMMY.prototype = {
 
         return false;
 
-    },
-
-    makeArrayofArrays: function (array) {
-        array.forEach(function(value, i, arr) {
-            arr[i] = value.split(' ');
-        });
-        return array;
     },
 
     doWeTakeTopCard: function ($deck, obj) { //add maybes to it that are two in a row and possible discard that are also two in a row
@@ -274,8 +213,6 @@ RUMMY.prototype = {
         var object = obj.keepTheseOnes;
         var oneMatchArray = obj.oneMatch;
         var morThanOneMatchArray = obj.moreThanOneMatch;
-        // var makeComparisionArray = $topCardContainer.find(':first-child').attr('class').split(' ');
-        //this.checkTheValueof(dataValue, obj);
         var topCardComparison = function (arr, dataValue) {
             var i, j;
             var suit = arr[0];
@@ -365,7 +302,7 @@ RUMMY.prototype = {
         return object;
     },
     
-    decideWhichOnesToKeep:function (obj) { //http://jsfiddle.net/9joukzhv/1/
+    decideWhichOnesToKeep:function (obj) { //http://jsfiddle.net/9joukzhv/1/ - http://jsfiddle.net/9joukzhv/2/
         var keepTheseOnes = {};
         var maybes = {};
         var possibleDiscard = {};
@@ -433,14 +370,14 @@ RUMMY.prototype = {
             maybes[value] = getDifference(keepTheseOnes[value], arrr);
             keepTheseOnes[value] = arrr;
             arrr = [];
-	});
+	   });
         
 	
-	return {
-		keepTheseOnes: keepTheseOnes,
-		maybes: maybes,
-		possibleDiscard: possibleDiscard
-	};
+        return {
+            keepTheseOnes: keepTheseOnes,
+            maybes: maybes,
+            possibleDiscard: possibleDiscard
+        };
 
     }, 
     
@@ -477,12 +414,13 @@ RUMMY.prototype = {
         }
 
         arr = looping(8, i);
-        return arr || 'stringz';
+        return arr || 'wtf';
 
 
     },
 
-    findMatches: function (objOfObjects) { //SOLUTION http://jsfiddle.net/25nh54dp/34/
+    findMatches: function (objOfObjects, playa) { //SOLUTION http://jsfiddle.net/25nh54dp/34/ // http://jsfiddle.net/25nh54dp/37/ line ~516 -- FIX THIS http://jsfiddle.net/25nh54dp/38/(screenshot)
+        //http://jsfiddle.net/25nh54dp/40/
         var properties = this.each_suit;
         var testArray = [];
         var keepArray = [];
@@ -503,14 +441,20 @@ RUMMY.prototype = {
         keysOfObjects.forEach(function (value, i, arr) {
             if (value === "keepTheseOnes") {
                 properties.forEach(function (val, index, array) {					
-                    var first, last;
+                    var first, last, middle;
                     if(objOfObjects[value][val].length >= 3){
                         if (objOfObjects[value][val][objOfObjects[value][val].length - 1] - (objOfObjects[value][val][0]) !== objOfObjects[value][val].length - 1) {
                             multipleHandsOneSuit(objOfObjects[value][val], val);
                         }  else {
                             first = objOfObjects[value][val][0];
                             last =  objOfObjects[value][val][objOfObjects[value][val].length - 1];
-                            keepArray.push(first, last); 
+                            if (objOfObjects[value][val].length === 3) {
+                                middle = objOfObjects[value][val][1];
+                                keepArray.push(first, middle, last);
+                            } else {
+                                keepArray.push(first, last);
+                            }
+                             
                         }                  
                     }
                 });
@@ -626,13 +570,13 @@ RUMMY.prototype = {
         }
 
 
-        function compareWithkeepArray() {
+        function compareWithkeepArray() { 
             var i = 0;
             var arrrrrrray = [];
             var matchMade = false;
             var doeTheyMatch = function (num) { 
                 if (num === keepArray[0]) {
-                    return keepArray[0];
+                    if (playa !== 'firstPlayer') return keepArray[0]; //FIX THIS
                 }
 
                 if (num === keepArray[1]) {
@@ -712,6 +656,7 @@ RUMMY.prototype = {
                 var freshFeeling = doeTheyMatch(objOfObjects.oneMatch[i]);
                 if (!!freshFeeling) {
                     //objOfObjects.oneMatch.splice(i, 1);//fix this
+                    //LEFT OFF HERE - check against keepArray here 
                     objOfObjects.moreThanOneMatch.push(freshFeeling);
                     objOfObjects.moreThanOneMatch.sort(function(a,b) {return a-b;});
                     matchMade = true;
@@ -919,13 +864,64 @@ RUMMY.prototype = {
         return 0;
     },
     
+    beginningOfTheEnd: function (playerOne, total, objectsGalore) {
+        if (!playerOne) return false;
+        if (playerOne === 'computer' || playerOne === 'findFirstPlayerScore') {
+            var finalScore = 0,
+                firstplayerScore = false,
+                computerScore = 0,
+                showCardObj = null,
+                deadWoodArray = [],
+                deadWoodMatch = null,
+                whatToMinusInARow = [],
+                whatToMinusMatch = [],
+                whatToMinus = 0;
+            if (playerOne === 'findFirstPlayerScore') {
+                firstplayerScore = true;    
+                finalScore = total - compPlayer.score;
+                console.log(compPlayer.score);
+                if (compPlayer.score === 0) finalScore = finalScore + 20; //if computer scores gin rummy perfect hand    
+            } else { //'computer'
+                compPlayer.score = computerScore = total;
+                finalScore = computerScore - player.firstPersonScore;
+                if (player.firstPersonScore === 0) finalScore = finalScore + 20;
+            }
+            showCardObj = this.showYourCardsJoshua((firstplayerScore) ? compPlayer.deck : objectsGalore);
+            this.manipulateTheDom(showCardObj);// manipulate the DOM
+            deadWoodArray = this.laySomeDeadwood((firstplayerScore) ? true : false, objectsGalore);
+            console.log(deadWoodArray);
+            deadWoodMatch = this.compareDeadwood(deadWoodArray, (firstplayerScore) ? compPlayer.deck : player.deck, (firstplayerScore) ? 'joshua' : false);
+            console.log(deadWoodMatch);
+
+            if (deadWoodMatch){
+               if (deadWoodMatch.inaRow.length) {
+                    whatToMinusInARow = this.addOnYourDeadwoodToOpponet(deadWoodMatch.inaRow, 'inarow', playerOne);
+                }
+                if (deadWoodMatch.match.length) {
+                    whatToMinusMatch = this.addOnYourDeadwoodToOpponet(deadWoodMatch.match, 'match', playerOne);                  
+                }
+                whatToMinus = this.loopThroughWhatToMinus(whatToMinusInARow, whatToMinusMatch );        
+                finalScore = (finalScore < 0) ? 0 - whatToMinus : finalScore - whatToMinus;
+            }  
+
+            if (finalScore > 0) {
+                this.makeLoveNotTupperWar(finalScore, playerOne, (firstplayerScore) ? false : true);
+            } else {
+                this.makeLoveNotTupperWar(Math.abs(finalScore) + 10, playerOne, (firstplayerScore) ? true : false);
+            }
+            return true; 
+        } else {
+            return false;
+        }
+    },
+    
     
     showYourCardsJoshua: function (obj) {
 
        // http://jsfiddle.net/fv6Ls7fg/1/ http://jsfiddle.net/fv6Ls7fg/2/
         var that = this;
         var stackCardsBeforeDeadwood = function () {
-            var $compPlayer = $('#comp_player');
+            var $compPlayer = compPlayer.$comp_player;
             var compPlayerMarginLeft = parseInt($compPlayer.css('marginLeft'));
             var firstCardLeft = 51; //see dealcards first one will always be 51
             var leftPosition = compPlayerMarginLeft + firstCardLeft; 
@@ -948,9 +944,6 @@ RUMMY.prototype = {
         
         for (prop in keep) {
             for (var i = 0; i<keep[prop].length; i++) {
-               /* var arr = [];
-                arr.push("."+prop, "."+this.cardArray[keep[prop][i] - 1]);
-                runsArray.push(arr.join(' ')) */
                 object[prop][i] = "." + prop + "." + this.cardArray[keep[prop][i] - 1];
             }
             
@@ -962,28 +955,32 @@ RUMMY.prototype = {
         
         
         object.match = matchArray;
+        console.log(object);
         
         return object;
         
     },
     
     manipulateTheDom: function (obj) {
+        console.log(obj);
         var prop;
         var match = obj.match;
-        var $comp = $('#comp_player');
+        var $comp = compPlayer.$comp_player;
         var $newDom = null;
         var pos = null;
+        var totalLength = 0;
         var doSomeDomManipulation = function (css_class, $deadWood) {
             if ($deadWood) {
                 $deadWood.children().appendTo($newDom);
                 return true;
             }
-            $comp.find(css_class).parent().appendTo($newDom);
+            $comp.find(css_class).parent().not('.tagged').appendTo($newDom).end().addClass('tagged');
         };
         
-        var figureOutChildrenAndPlacement = function (length, $newDom) {
+        var figureOutChildrenAndPlacement = function (len, $newDom) { //len is not used
             var compchildrenLength = $comp.children().length;
             var newDomChildrenLength = $newDom.children().length;
+            totalLength += newDomChildrenLength;
             var width = newDomChildrenLength * 85;
             $newDom.css('width',width); //85 children width
             if (compchildrenLength == 1) {
@@ -997,7 +994,11 @@ RUMMY.prototype = {
             }
             
             if (compchildrenLength == 3) {
-                $newDom.css('left', '100px');
+                if (totalLength === 10) {
+                   $newDom.css('left', '100px'); 
+                } else {
+                   $newDom.css('left', '50px'); 
+                } 
             }
             $newDom.appendTo($comp);
         };
@@ -1015,7 +1016,7 @@ RUMMY.prototype = {
             doSomeDomManipulation('.wrapper',$compArea );
             $newDom.css({'left': '-85px', 'width': (compareaChildrenLength * 85) + 'px'} );
             $newDom.appendTo($comp);
-            $compArea.remove();
+            $compArea.remove(); /* IMPORTANT */
         };
         for (prop in obj) {
             if (prop !== "match" && obj[prop].length) {
@@ -1042,7 +1043,7 @@ RUMMY.prototype = {
             
     },
     
-    laySomeDeadwood: function (joshuKnocked, Knocker, notKnocker) {
+    laySomeDeadwood: function (joshuKnocked, notKnocker) {
         var $area = null;
         var deadWooodCardsArray = [];
         var that = this;
@@ -1051,7 +1052,6 @@ RUMMY.prototype = {
                 for(var j=0; j<2; j++) { // 2 is a match 
                     var numberToLetters = "."+that.cardArray[whatToFind[i] - 1];
                     deadWooodCardsArray.push($area.find(numberToLetters).eq(j).attr('class').split(' ')[0] + ' ' +whatToFind[i]);  // or at end + numberToLetters 
-                   // deadWooodCardsArray.push($area.find("[data-value="+whatToFind[i]+"]").eq(j).attr('class').split(' ')[0] + ' ' +whatToFind[i]);
                 }
             }
         };
@@ -1059,7 +1059,6 @@ RUMMY.prototype = {
         var findMaybesOrPossibleDiscards = function (whatToFind) {
             for (var prop in whatToFind )
                 for (var i=0; i<whatToFind[prop].length; i++) {
-                   // var addAString = (parseInt(whatToFind[prop][i] > 9)) ? whatToFind[prop][i] : "0"+whatToFind[prop][i];
                     deadWooodCardsArray.push(prop + ' ' +whatToFind[prop][i] );
                 }
         };
@@ -1078,11 +1077,11 @@ RUMMY.prototype = {
         
         if (joshuKnocked) {
             $area = this.$area;
-           return giveFirstPlayerHints(notKnocker);
         } else {
-            $area = $('.leftovers');
-           return giveFirstPlayerHints(notKnocker);
+            $area = $('.leftovers');  // what if computer has rummy after you knocked - fat chance but it could happen!   
         }
+        
+        return giveFirstPlayerHints(notKnocker);
         
 
     },
@@ -1185,7 +1184,7 @@ RUMMY.prototype = {
         
     },
     
-    addOnYourDeadwoodToOpponet: function (arr, str) {
+    addOnYourDeadwoodToOpponet: function (arr, str, player) {
         var that = this;
         var num = null;
         var numArray = [];
@@ -1200,17 +1199,26 @@ RUMMY.prototype = {
             arr.forEach(function(val) {
                num = extractNumber(val);
                var string = that.cardArray[num - 1];
-               $('section.leftovers').eq(0).find('.'+string).parent().addClass('zooom');
+               if (player === 'findFirstPlayerScore') {
+                   that.$area.find('.'+string).parent().addClass('zooom');
+               } else {
+                   $('section.leftovers').eq(0).find('.'+string).parent().addClass('zooom');
+               }
                numArray.push(num);
             }); 
-            return num;
+            return numArray;
         } else {
             arr.forEach(function(val) {
                num = extractNumber(val);
                var numString = "."+ that.cardArray[num - 1];
                var suit = "." + extractString(val);
                var together = suit + numString;
-               $('section.leftovers').eq(0).find(together).parent().addClass('zooom');
+                if (player === 'findFirstPlayerScore') {
+                    that.$area.find(together).parent().addClass('zooom');
+                } else {
+                    $('section.leftovers').eq(0).find(together).parent().addClass('zooom'); 
+                }
+
                numArray.push(num);
             });
             
@@ -1291,7 +1299,14 @@ RUMMY.prototype = {
                 if (e) {
                     if (e.data) {
                         if (e.data.score) { //END OF Match
-                            console.log('test');
+                           [].slice.call(document.querySelectorAll('button')).forEach(function (obj) {
+                                if (obj.classList.contains('overlay-close')) {
+                                    obj.disabled = false;
+                                } else {
+                                    obj.disabled = true;
+                                }
+                           });
+                           rummy.$htmlDeck.children(':last-child').find('div').children('a.take').hide();
                            that.updateScore(howsitgonnabe);
                            startNewGame();
                            //create new game
@@ -1419,7 +1434,7 @@ RUMMY.prototype = {
         if (typeof param === 'undefined') return false;
         var secondString = 'Sort your cards by either suit or match. Drag each card with your mouse. When you are done sorting, either take the top card from the discard pile or click take from deck button';
         var thirdString = "Before you discard any of your cards you have the option to knock (end the game) - Any remaining cards that are not part of a valid combination are considered deadwood, \n\
-                              the total value of your deadwood should be ten points or less or you will be alerted that you are unable to knock if you are able to knock you point total will compared to Joshuas(the computer) too see if you won or lost";
+                              the total value of your deadwood should be ten points or less or you will be alerted that you are unable to knock if you are able to knock your point total will be compared to Joshuas(the computer) too see if you won or lost";
         var $html = null;
         if (param === 'first') {
             $html = $('<div class="first_bubble bubble">Click below to start game</div>');
@@ -1777,6 +1792,7 @@ compPlayer.takeNextCard = function () {
     var that = this;
     var $deck = this.$htmlDeck;
     var $compArea = this.$comp_area;
+    this.$comp_player = $('#comp_player');
     var lastInHandLeftPos = this.lastCardPos = parseInt($compArea.children(':first-child').css('left'));
     if (this.index === 1) {this.lastInDeck = lastInHandLeftPos; }
     var pos = this.parentInfoObj.left || lastInHandLeftPos + 50 + 'px';
