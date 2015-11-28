@@ -190,6 +190,7 @@ RUMMY.prototype = {
 
         
         $frontSideOfCardToBeDiscarded = this.findCardtoDiscard(stringToDiscard, objectsGalore.keepTheseOnes, typeof whatCardToRidThisTime === 'number' ? whatCardToRidThisTime : null); 
+        console.log($frontSideOfCardToBeDiscarded);
         $cardToBeDiscarded = $frontSideOfCardToBeDiscarded.parent();
         compPlayer.parentInfoObj = this.getStyles($cardToBeDiscarded);
         $frontSideOfCardToBeDiscarded.addClass('taketopCard').find('a').text(this.takeCard).addClass('take');
@@ -518,11 +519,20 @@ RUMMY.prototype = {
         function removeFromDiscard(arr1, arry2) {
             var arr = arr1.concat(arry2),
                 endSecondLoop;
-            function loop(j, discardOrMaybe) {
+            function loop(j, discardOrMaybe, third) {
                 for (var prop in objOfObjects[discardOrMaybe]) {
                     for (var i = 0; i < objOfObjects[discardOrMaybe][prop].length; i++)
                         if (arr[j] == objOfObjects[discardOrMaybe][prop][i]) {
-                            objOfObjects[discardOrMaybe][prop].splice(i, 1);
+                            if (discardOrMaybe === 'keepTheseOnes' && third) { //so we don't remove something from keepTheseOnes simply because it matches a value in one match http://jsfiddle.net/25nh54dp/44/
+                                third.forEach(function (keepArrayMatchValue) {
+                                    if (keepArrayMatchValue === arr[j]) {
+                                        objOfObjects[discardOrMaybe][prop].splice(i, 1);
+                                    }
+                                });
+                            } else {
+                                objOfObjects[discardOrMaybe][prop].splice(i, 1); 
+                            }
+
                         }
                 }
 
@@ -541,7 +551,7 @@ RUMMY.prototype = {
             }
 
             if (endSecondLoop == "maybes" && arguments[2]) {
-                loop(0, 'keepTheseOnes');
+                loop(0, 'keepTheseOnes', arguments[2]);
             }
         }
         
@@ -651,7 +661,7 @@ RUMMY.prototype = {
                     });
                 });
             };
-            if (keepArray.length > 4) return false; // they have at least
+            if (keepArray.length > 5) return false; // they have at least
             while (i < objOfObjects.oneMatch.length) {
                 var freshFeeling = doeTheyMatch(objOfObjects.oneMatch[i]);
                 if (!!freshFeeling) {
@@ -876,7 +886,7 @@ RUMMY.prototype = {
                 whatToMinusInARow = [],
                 whatToMinusMatch = [],
                 whatToMinus = 0;
-            if (playerOne === 'findFirstPlayerScore') {
+            if (playerOne === 'findFirstPlayerScore') { //computer has knocked
                 firstplayerScore = true;    
                 finalScore = total - compPlayer.score;
                 console.log(compPlayer.score);
@@ -1505,7 +1515,7 @@ oneTimeEvents.createarrayofcards = function (callcreatehtmldeck) {
         }
     }
     this.whole_deck = this.whole_deck.shuffle(); //shuffling the deck
-    if (callcreatehtmldeck === true) {
+    if (callcreatehtmldeck) {
         this.fillinmaincontent();
         this.loopthroughdiv();
         this.dealcards();
