@@ -1576,30 +1576,28 @@ oneTimeEvents.dealcards = function () {
         var i = 52;
         that.helpfulHints();
         this.className += ' hide';
-        var x = [];
-        //check these values on second call of deal cards  and k as well console log those 
-        var refreshIntervalId = window.setInterval(function () {
-            if (i % 2 === 1) {
-                x.push($doItforTheChildren.eq(i));
-                $doItforTheChildren.eq(i).addClass('player').css({
-                    '-webkit-transform': 'translateX(' + (k - 50) + 'px)',
-                    'transform': 'translateX(' + (k - 50) + 'px)',
-                    'zIndex': k + 2
-                }).removeStyle('top'); //.removeStyle('z-index') // player one
-            } else {
-                $doItforTheChildren.eq(i).addClass('comp_player').css({
-                    left: k - 50,
-                    'top': '-185px'
-                }); // computer player
-            }
-            k = 50 + k;
-            i = i - 1;
-            if (i < 32) { //10 cards each 52-32         
-                that.flipNewDeck('player', $deck.find('.player'));
-                that.flipNewDeck('comp', $deck.find('.comp_player'));
-                window.clearInterval(refreshIntervalId);
-            }
-        }, 250); // end setInterval	
+			  while ( i < 53) {
+          if (i % 2 === 1) {
+              //x.push($doItforTheChildren.eq(i));
+              $doItforTheChildren.eq(i).addClass('player').css({
+                  '-webkit-transform': 'translateX(' + (k - 50) + 'px)',
+                  'transform': 'translateX(' + (k - 50) + 'px)',
+                  'zIndex': k + 2
+              }).removeStyle('top'); //.removeStyle('z-index') // player one
+          } else {
+              $doItforTheChildren.eq(i).addClass('comp_player').css({
+                  left: k - 50,
+                  'top': '-185px'
+              }); // computer player
+          }
+          k = 50 + k;
+          i = i - 1;
+          if (i === 31) { //10 cards each 52-32
+              that.flipNewDeck('player', $deck.find('.player'));
+              that.flipNewDeck('comp', $deck.find('.comp_player'));
+              break;
+          }
+        }
     }, false);
 };
 
@@ -1622,7 +1620,7 @@ oneTimeEvents.flipNewDeck = function (whichPlayer, $object) {
                         that.switchitupyo($object);
                     }
                 });
-            }, 3000);
+            }, 1500);
     } else { //it's computer player
         $object.removeClass('temp');
         window.setTimeout(function () {
@@ -1635,7 +1633,7 @@ oneTimeEvents.flipNewDeck = function (whichPlayer, $object) {
                 marginLeft: (left)
             });
             $object.appendTo(that.$comp_area);
-        }, 4000);
+        }, 3000);
     }
 };
 
@@ -1656,7 +1654,7 @@ oneTimeEvents.dealfirstcard = function () {
     var that = this;
     var $takeCard = $('#takeCard');
     var $deckLastChild = $(deckLastChild);
-    $deckLastChild.removeStyle('left').addClass('showdacard delt').on(transitionEndEvent, function () {
+    $deckLastChild.addClass('showdacard delt').on(transitionEndEvent, function () {
         $(this).addClass('flipit').children('div').addClass('flipit taketopCard ').on(transitionEndEvent, function () {
             $takeCard.removeClass('hide').next().removeClass('hide').attr('disabled', true);
             $(this).find('a').text(that.takeCard).addClass('take');
