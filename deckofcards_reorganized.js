@@ -1537,7 +1537,7 @@ oneTimeEvents.createhtmlDeck = function (wholeDeck) {
         suit;
     for (i = 0; i < wholedecklength; i++) {
         suit = this.whole_deck[i].split(' ')[2];
-        html += '<section class="wrapper"><div class=' + suit + '>' + wholeDeck[i] + '</div><div class="back"></div></section>';
+        html += '<section class="wrapper"><div data-side="front" class=' + suit + '>' + wholeDeck[i] + '</div><div class="back"></div></section>';
     }
     html += '</section>';
     return html;
@@ -1574,30 +1574,47 @@ oneTimeEvents.dealcards = function () {
     deal.addEventListener('click', function () {
         var k = 1;
         var i = 52;
+        var delay = .25;
         that.helpfulHints();
         this.className += ' hide';
-			  while ( i < 53) {
-          if (i % 2 === 1) {
-              //x.push($doItforTheChildren.eq(i));
-              $doItforTheChildren.eq(i).addClass('player').css({
-                  '-webkit-transform': 'translateX(' + (k - 50) + 'px)',
-                  'transform': 'translateX(' + (k - 50) + 'px)',
-                  'zIndex': k + 2
-              }).removeStyle('top'); //.removeStyle('z-index') // player one
-          } else {
-              $doItforTheChildren.eq(i).addClass('comp_player').css({
-                  left: k - 50,
-                  'top': '-185px'
-              }); // computer player
-          }
-          k = 50 + k;
-          i = i - 1;
-          if (i === 31) { //10 cards each 52-32
-              that.flipNewDeck('player', $deck.find('.player'));
-              that.flipNewDeck('comp', $deck.find('.comp_player'));
-              break;
-          }
+        var x = [];
+        var delayString;
+        //check these values on second call of deal cards  and k as well console log those 
+   //   var refreshIntervalId = window.setInterval(function () {
+        $doItforTheChildren.eq(32).one(transitionEndEvent, function () {
+            console.log('called');
+            that.flipNewDeck('player', $deck.find('.player'));
+            that.flipNewDeck('comp', $deck.find('.comp_player'));
+        }) 
+        while (i < 53) {
+            if (i % 2 === 1) {
+                //x.push($doItforTheChildren.eq(i));
+                delayString = delay.toString() + 's';
+                console.log(delayString);
+                $doItforTheChildren.eq(i).addClass('player').css({
+                   // '-webkit-transform': 'translateX(' + (k - 50) + 'px)',
+                    'transform': 'translateX(' + (k - 50) + 'px)',
+                    'transition-delay': delayString
+                  //  'zIndex': k + 2
+                }).removeStyle('top'); //.removeStyle('z-index') // player one
+            } else {
+                $doItforTheChildren.eq(i).addClass('comp_player').css({
+                    left: k - 50,
+                    'top': '-185px',
+                    'transition-delay': delayString
+                }); // computer player
+            }
+            k = 50 + k;
+            i = i - 1;
+            delay = .25 + delay;
+ 
+            if (i === 31) { //10 cards each 52-32  
+                console.log('yes')     
+                break;
+                //window.clearInterval(refreshIntervalId);
+            }
         }
+      //  }, 200); // end setInterval	
     }, false);
 };
 
@@ -1611,19 +1628,19 @@ oneTimeEvents.flipNewDeck = function (whichPlayer, $object) {
                 top: '-185px',
                 marginLeft: (left)
             });
-            window.setTimeout(function () {
+           // window.setTimeout(function () {
                 var obj = $object.get().reverse();
                 $object.addClass('flipchild').children('div').addClass('flip').one(transitionEndEvent, function (event) {
                     iterator++;
-                    $(obj).appendTo(that.$area).removeAttr('style');
+                    $(obj).appendTo(that.$area).removeAttr('style');//.removeStyle('transform');
                     if (iterator == $(this).length) {
                         that.switchitupyo($object);
                     }
                 });
-            }, 1500);
+          //  }, 1500);
     } else { //it's computer player
         $object.removeClass('temp');
-        window.setTimeout(function () {
+      //  window.setTimeout(function () {
             var top_pos = $object.position().top;
             top_pos = top_pos - 15; // because of min-height on main content div
             var left = $object.parent().offset().left;
@@ -1633,7 +1650,7 @@ oneTimeEvents.flipNewDeck = function (whichPlayer, $object) {
                 marginLeft: (left)
             });
             $object.appendTo(that.$comp_area);
-        }, 3000);
+      //  }, 3000);
     }
 };
 
@@ -1802,11 +1819,13 @@ compPlayer.takeNextCard = function () {
     var $compArea = this.$comp_area;
     this.$comp_player = $('#comp_player');
     var lastInHandLeftPos = this.lastCardPos = parseInt($compArea.children(':first-child').css('left'));
+    console.log(this.index);
     if (this.index === 1) {this.lastInDeck = lastInHandLeftPos; }
     var pos = this.parentInfoObj.left || lastInHandLeftPos + 50 + 'px';
     var zIndex = this.parentInfoObj.zIndex || 25;
     var $lastInDeck = $deck.find('.delt:first').prev();
     var $topCardShown = $deck.children(':last');
+    console.log($lastInDeck);
     var takeTopCard = this.preFilteringOfCreateArray($compArea.children(), 'topCard');
     var $element = (!!takeTopCard) ? $topCardShown : $lastInDeck;
     $element.removeClass('flipchild player speedUpAnimation').addClass('comp_player temp').css({

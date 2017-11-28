@@ -1,0 +1,481 @@
+* {font-family: arial; font-size:14px;}
+html, body {overflow: hidden; height:100%;}
+p {padding:0 10px;}
+a:hover {text-decoration:none;}
+.hide {display:none !important;}
+#area .hide {display:inline-block !important}
+button {
+    display:block;
+    border-radius:3px;
+    background:#ececec;
+    margin:20px;
+    width:100px;
+    padding:5px;
+    text-align:center;
+    border:1px solid #999999;
+    font-size:10px;
+    text-transform:uppercase;
+    line-height:14px;
+    cursor:pointer;
+    color:#91B3C6;
+}
+
+button::-moz-focus-inner {
+    border:none;
+}
+
+h6 {
+    margin-top:2px;
+    border-top:1px solid black;
+    font-weight:bold;
+    padding-top:3px;
+}
+
+h6:empty {
+    border:none;
+}
+
+[disabled] {
+    cursor:default;
+    color:#cbcbcb;
+}
+#main_content {
+	width:100%;
+    position: absolute;
+    top:50%;
+    transform: translateY(-100%);
+    min-height: 220px;
+}
+
+#deck { 
+    position:relative;
+    margin-left:220px;
+    min-height:inherit;
+}
+
+article {
+    position:absolute;
+    left:30px;
+    top:0px;
+    z-index:100;
+}
+
+section.wrapper  {
+	position:relative;
+    max-width: 120px;
+
+    &.showdacard {
+        transition-duration: 1s;
+        transform:translateX(168px);
+    }
+
+    > div {
+        position:absolute;
+        width:85px;
+        height:150px;
+        padding:0 15px;
+        border:1px solid #cccccc;
+        padding-top:0px;
+        border-radius:5px;
+        transition: all 1s ease 1.5s;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform-style: preserve-3d;
+
+        &:first-child {
+            transform: rotateY(180deg);
+            z-index: 0;
+            text-align:center;
+            background-color:white;
+        }
+
+        &.back {
+            z-index:4;
+            background-image:url(../images/card_background.png);
+            background-repeat:no-repeat; 
+            background-color:white;
+            transform: rotateY(0deg);
+        }
+
+        p {
+            margin-top:50px
+        }
+    }
+
+
+    &.speedUpAnimation {
+
+        > div {
+            transition: all .8s ease .3s;
+        }
+
+    }
+
+}
+
+.player, .showdacard {
+    transition:transform 2.1s ease .8s;
+    cursor:move;
+    &.speedUpAnimation {
+        transition:all .8s ease 0s;
+        &.flipchild {
+            transition:all .4s ease .1s;
+        }
+    }
+    &.flipchild {
+        > div:first-child {
+            transform: rotateY(00deg); 
+            z-index: 5; 
+        }
+        .back {
+            transform: rotateY(180deg);
+        }
+    }
+}
+
+.showdacard {
+
+}
+
+.comp_player {
+    transition:all 2.1s ease .8s;
+}
+
+div:first-child span {
+	display:none;
+}
+
+div:first-child a {
+	opacity:0;
+	position:absolute;
+	bottom:2%;
+	right:50%;
+	padding:5px; 
+	font-size:10px;
+	text-transform:uppercase;
+	cursor:pointer;
+	font-weight:bold;
+	z-index:100;
+	display:inline-block;
+	font-family:arial;
+	color:#999999;
+	text-decoration:none;
+    cursor:default;
+    
+    &.takeCardFromPile {
+        opacity:100;
+        cursor: pointer;
+    }
+}
+
+#deck div:first-child a  {
+    transition: opacity 0.5s;
+}
+
+div.taketopCard a {
+	opacity:100;
+	cursor:pointer;
+}
+
+/*
+####################################
+THE CARDS
+####################################
+*/
+
+.two.clubs {background-image:url(../images/cards/two_clubs.png);}
+.three.clubs {background-image:url(../images/cards/three_clubs.png);}
+.four.clubs {background-image:url(../images/cards/four_clubs.png);}
+.five.clubs {background-image:url(../images/cards/five_clubs.png);}
+.six.clubs {background-image:url(../images/cards/six_clubs.png);}
+.seven.clubs {background-image:url(../images/cards/seven_clubs.png);}
+.eight.clubs {background-image:url(../images/cards/eight_clubs.png);}
+.nine.clubs {background-image:url(../images/cards/nine_clubs.png);}
+.ten.clubs {background-image:url(../images/cards/ten_clubs.png);}
+.jack.clubs {background-image:url(../images/cards/jack_clubs.png);}
+.queen.clubs {background-image:url(../images/cards/queen_clubs.png);}
+.king.clubs {background-image:url(../images/cards/king_clubs.png);}
+.ace.clubs {background-image:url(../images/cards/ace_clubs.png);}
+
+.two.diamonds{background-image:url(../images/cards/two_diamonds.png);}
+.three.diamonds {background-image:url(../images/cards/three_diamonds.png);}
+.four.diamonds {background-image:url(../images/cards/four_diamonds.png);}
+.five.diamonds {background-image:url(../images/cards/five_diamonds.png);}
+.six.diamonds {background-image:url(../images/cards/six_diamonds.png);}
+.seven.diamonds {background-image:url(../images/cards/seven_diamonds.png);}
+.eight.diamonds {background-image:url(../images/cards/eight_diamonds.png);}
+.nine.diamonds {background-image:url(../images/cards/nine_diamonds.png);}
+.ten.diamonds {background-image:url(../images/cards/ten_diamonds.png);}
+.jack.diamonds {background-image:url(../images/cards/jack_diamonds.png);}
+.queen.diamonds {background-image:url(../images/cards/queen_diamonds.png);}
+.king.diamonds {background-image:url(../images/cards/king_diamonds.png);}
+.ace.diamonds {background-image:url(../images/cards/ace_diamonds.png);}
+
+.two.hearts{background-image:url(../images/cards/two_hearts.png);}
+.three.hearts {background-image:url(../images/cards/three_hearts.png);}
+.four.hearts {background-image:url(../images/cards/four_hearts.png);}
+.five.hearts {background-image:url(../images/cards/five_hearts.png);}
+.six.hearts {background-image:url(../images/cards/six_hearts.png);}
+.seven.hearts {background-image:url(../images/cards/seven_hearts.png);}
+.eight.hearts {background-image:url(../images/cards/eight_hearts.png);}
+.nine.hearts {background-image:url(../images/cards/nine_hearts.png);}
+.ten.hearts {background-image:url(../images/cards/ten_hearts.png);}
+.jack.hearts {background-image:url(../images/cards/jack_hearts.png);}
+.queen.hearts {background-image:url(../images/cards/queen_hearts.png);}
+.king.hearts {background-image:url(../images/cards/king_hearts.png);}
+.ace.hearts {background-image:url(../images/cards/ace_hearts.png);}
+
+.two.spades{background-image:url(../images/cards/two_spades.png);}
+.three.spades {background-image:url(../images/cards/three_spades.png);}
+.four.spades {background-image:url(../images/cards/four_spades.png);}
+.five.spades {background-image:url(../images/cards/five_spades.png);}
+.six.spades {background-image:url(../images/cards/six_spades.png);}
+.seven.spades {background-image:url(../images/cards/seven_spades.png);}
+.eight.spades {background-image:url(../images/cards/eight_spades.png);}
+.nine.spades {background-image:url(../images/cards/nine_spades.png);}
+.ten.spades {background-image:url(../images/cards/ten_spades.png);}
+.jack.spades {background-image:url(../images/cards/jack_spades.png);}
+.queen.spades {background-image:url(../images/cards/queen_spades.png);}
+.king.spades {background-image:url(../images/cards/king_spades.png);}
+.ace.spades {background-image:url(../images/cards/ace_spades.png);}
+
+
+/* PLAYER */
+
+$elements: 11;
+@for $i from 0 to $elements {
+    #area section:nth-child(#{$i}) {
+     z-index: $i
+  }
+}
+
+#player {
+    position: absolute;
+    #area {
+        position: relative; 
+        display: flex;
+
+        .player {
+            position: relative;
+            margin-right:100px;
+        }
+    }
+}
+
+/* COMPUTER PLAYER */
+
+#comp_player {
+    position: absolute;
+    #comp_area {
+        position: relative;
+        display: flex;
+
+        .comp_player {
+            position: relative;
+            margin-right:100px; 
+        }
+    }
+}
+
+
+
+/* HELPFUL HINTS */
+
+.bubble {
+    position:absolute;
+    background: #ECECEC;
+    text-align:center;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    font-size:14px;
+    line-height:18px;
+    color:#91B3C6;      
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    border: #91B3C6 solid 4px;
+    -webkit-transition: all 1s ease-in-out 0.5s;
+    transition: all 1s ease-in-out 0.5s;
+}
+
+.first_bubble {
+    top:-35px;
+    width: 105px;
+    height: 65px;
+    left:55px;
+    padding:8px 2.5px 0;
+    
+}
+
+.first_bubble:after {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 15px 12px 0;
+    border-color: #ECECEC transparent;
+    display: block;
+    width: 0;
+    z-index: 1;
+    bottom: -15px;
+    left: 37px;
+}
+
+.first_bubble:before {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 18px 15px 0;
+    border-color: #91B3C6 transparent;
+    display: block;
+    width: 0;
+    z-index: 0;
+    bottom: -22px;
+    left: 34px;
+}
+
+.second_bubble {
+    width: 215px;
+    height: 150px;
+    left:-300px;
+    padding:10px 6px 0px;
+    top:425px;
+    
+}
+
+.second_bubble.animated {
+    left:1%;
+}
+
+.second_bubble:after {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 11px 16px 11px 0;
+    border-color: transparent #ececec;
+    display: block;
+    width: 0;
+    z-index: 1;
+    top: 35px;
+    left: -16px;
+}
+
+.second_bubble:before {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 14px 19px 14px 0;
+    border-color: transparent #91B3C6;
+    display: block;
+    width: 0;
+    z-index: 0;
+    top: 32px;
+    left:-23px;
+}
+
+.third_bubble {
+    width: 215px;
+    height: 280px;
+    top:425px;
+    left:-300px;
+    padding:10px 6px 0;
+}
+
+.third_bubble.animated {
+    left:1%;
+}
+
+.third_bubble:after {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 11px 16px 11px 0;
+    border-color: transparent #ececec;
+    display: block;
+    width: 0;
+    z-index: 1;
+    top: 35px;
+    left: -16px;
+}
+
+
+.third_bubble:before {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 14px 19px 14px 0;
+    border-color: transparent #91B3C6;
+    display: block;
+    width: 0;
+    z-index: 0;
+    top: 32px;
+    left:-23px;
+}
+
+
+#game_over h2 {
+    font-size:24px;
+    text-align:center;
+}
+
+
+/* SCORING SECTION */
+#score {
+    position: absolute;
+    left:1%;
+    top:2%;
+    width: 175px;
+    border: 1px solid #cccccc;
+    display:none;
+}
+
+#score span {
+    display:block;
+}
+
+#you {
+    float:left;
+    width:48%;
+    box-sizing: border-box;
+    padding:2%;
+    margin-right:2%;
+    border-right:1px solid #cccccc;
+    text-align:center;
+    
+}
+
+#joshua {
+    float:right;
+    width:48%;
+    box-sizing: border-box;
+    padding:2%;
+    text-align:center;
+    
+}
+
+#score > div > span {
+    display:block;
+}
+
+
+/* Styles for once is game is over and computer lays deadwood */
+.runs_wrapper {
+	position:relative;
+        height:152px;
+        position:absolute;
+}
+
+
+
+.runs_wrapper section.wrapper > div:first-child {
+	transform: rotateY(0deg);
+	z-index:5;
+	width:85px;
+	float:left;
+}
+
+.runs_wrapper > .comp_player.wrapper {
+    min-width:85px;
+    height: 120px;
+    float:left;
+}
+
