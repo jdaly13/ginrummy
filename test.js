@@ -16,7 +16,7 @@ function belnord () {
     container.appendChild(span)
 }
 
-function location (origin) {
+function originLocation (origin) {
 	switch (origin) {
 	case "http://262fifth.dev.dbxd.com/":
         return true;
@@ -27,4 +27,4 @@ function location (origin) {
 	}
 }
 
-location(window.location.origin);
+originLocation(window.location.origin);
