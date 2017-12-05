@@ -9,7 +9,8 @@ const initialState = {
 	delt: false,
 	cardsFlipped: false,
 	reshuffled: false,
-	index:  0
+	index:  0,
+	deck: false
 }
 
 let index = 0;
@@ -29,7 +30,11 @@ export default function game (state = initialState, action) {
 		return Object.assign({}, state, { 
 			reshuffled: true,
 			index: state.index++
-         })
+		 })
+	case "DECK_CREATED":
+		 return Object.assign({}, state, { 
+			 deck: true
+		  })
 	default:
 		return state
 	}

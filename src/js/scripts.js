@@ -1,4 +1,5 @@
-import { rummy, oneTimeEvents } from './rummy';
+import { rummy } from './rummy';
+import { oneTimeEvents } from './rummy/onetimeevents'
 rummy.store.subscribe(()=> {
     console.log(rummy.store.getState())
 })

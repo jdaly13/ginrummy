@@ -11,3 +11,9 @@ additions to be added in future versions
 *congratulations screen
 *off screen menu for functionality
 *better algorithm
+
+Currently in process of doing version 2.0 where no jQuery is needed and using Redux to manage state and a build process that utilizes
+Ecmascript 6 and making it more modular
+
+clone repo and run grunt start to create a local server
+currently create deck of cards, shuffle and deal them

@@ -43,8 +43,8 @@ h6:empty {
 	width:100%;
     position: absolute;
     top:50%;
-    transform: translateY(-100%);
-    min-height: 220px;
+    transform: translateY(-50%);
+    min-height: 200px;
 }
 
 #deck { 
@@ -294,122 +294,123 @@ $elements: 11;
     -moz-border-radius: 6px;
     border-radius: 6px;
     border: #91B3C6 solid 4px;
-    -webkit-transition: all 1s ease-in-out 0.5s;
-    transition: all 1s ease-in-out 0.5s;
+    transition: left 1s ease-in-out 2s;
 }
 
-.first_bubble {
-    top:-35px;
+[data-bubble="first"] {
+    top:50%;
+    transform: translateY(-50%);
     width: 105px;
     height: 65px;
-    left:55px;
+    left:50px;
     padding:8px 2.5px 0;
+    margin-top:-150px;
+
+    &:after {
+        content: '';
+        position: absolute;
+        border-style: solid;
+        border-width: 15px 12px 0;
+        border-color: #ECECEC transparent;
+        display: block;
+        width: 0;
+        z-index: 1;
+        bottom: -15px;
+        left: 37px;
+    }
+
+    &:before {
+        content: '';
+        position: absolute;
+        border-style: solid;
+        border-width: 18px 15px 0;
+        border-color: #91B3C6 transparent;
+        display: block;
+        width: 0;
+        z-index: 0;
+        bottom: -22px;
+        left: 34px;
+    }
     
 }
 
-.first_bubble:after {
-    content: '';
-    position: absolute;
-    border-style: solid;
-    border-width: 15px 12px 0;
-    border-color: #ECECEC transparent;
-    display: block;
-    width: 0;
-    z-index: 1;
-    bottom: -15px;
-    left: 37px;
-}
-
-.first_bubble:before {
-    content: '';
-    position: absolute;
-    border-style: solid;
-    border-width: 18px 15px 0;
-    border-color: #91B3C6 transparent;
-    display: block;
-    width: 0;
-    z-index: 0;
-    bottom: -22px;
-    left: 34px;
-}
-
-.second_bubble {
-    width: 215px;
-    height: 150px;
+[data-bubble="second"] {
     left:-300px;
-    padding:10px 6px 0px;
-    top:425px;
+
+    &.animated {
+        width: 200px;
+        height: 150px;
+        left:1%;
+        padding:10px 6px 0px;
+        top:70%;
+    }
+
+    &:after {
+        content: '';
+        position: absolute;
+        border-style: solid;
+        border-width: 11px 16px 11px 0;
+        border-color: transparent #ececec;
+        display: block;
+        width: 0;
+        z-index: 1;
+        top: 35px;
+        left: -16px;
+    }
+
+    &:before {
+        content: '';
+        position: absolute;
+        border-style: solid;
+        border-width: 14px 19px 14px 0;
+        border-color: transparent #91B3C6;
+        display: block;
+        width: 0;
+        z-index: 0;
+        top: 32px;
+        left:-23px;
+    }
     
 }
 
-.second_bubble.animated {
-    left:1%;
-}
-
-.second_bubble:after {
-    content: '';
-    position: absolute;
-    border-style: solid;
-    border-width: 11px 16px 11px 0;
-    border-color: transparent #ececec;
-    display: block;
-    width: 0;
-    z-index: 1;
-    top: 35px;
-    left: -16px;
-}
-
-.second_bubble:before {
-    content: '';
-    position: absolute;
-    border-style: solid;
-    border-width: 14px 19px 14px 0;
-    border-color: transparent #91B3C6;
-    display: block;
-    width: 0;
-    z-index: 0;
-    top: 32px;
-    left:-23px;
-}
-
-.third_bubble {
-    width: 215px;
+[data-bubble="third"] {
+    width: 200px;
     height: 280px;
-    top:425px;
+    top:70%;
     left:-300px;
     padding:10px 6px 0;
+
+    &.animated {
+        left:1%;
+    }
+
+    &:after {
+        content: '';
+        position: absolute;
+        border-style: solid;
+        border-width: 11px 16px 11px 0;
+        border-color: transparent #ececec;
+        display: block;
+        width: 0;
+        z-index: 1;
+        top: 35px;
+        left: -16px;
+    }
+
+    &:before {
+        content: '';
+        position: absolute;
+        border-style: solid;
+        border-width: 14px 19px 14px 0;
+        border-color: transparent #91B3C6;
+        display: block;
+        width: 0;
+        z-index: 0;
+        top: 32px;
+        left:-23px;
+    }
 }
 
-.third_bubble.animated {
-    left:1%;
-}
-
-.third_bubble:after {
-    content: '';
-    position: absolute;
-    border-style: solid;
-    border-width: 11px 16px 11px 0;
-    border-color: transparent #ececec;
-    display: block;
-    width: 0;
-    z-index: 1;
-    top: 35px;
-    left: -16px;
-}
-
-
-.third_bubble:before {
-    content: '';
-    position: absolute;
-    border-style: solid;
-    border-width: 14px 19px 14px 0;
-    border-color: transparent #91B3C6;
-    display: block;
-    width: 0;
-    z-index: 0;
-    top: 32px;
-    left:-23px;
-}
 
 
 #game_over h2 {

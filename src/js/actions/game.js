@@ -18,3 +18,10 @@ export function dealCards (text) {
 		text
 	}
 }
+
+export function createDeck (text) {
+    return {
+        type: 'DECK_CREATED',
+        text
+    }
+}
