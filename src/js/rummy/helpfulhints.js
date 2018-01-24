@@ -6,9 +6,12 @@ helpfulhints.showHint = function (whichHint) {
     this.DOMbubble.classList.remove('hide');
     this.DOMbubble.removeAttribute('data-bubble');
     if (whichHint === 1) {
-        this.DOMbubble.setAttribute('data-bubble', 'second');
         this.DOMbubble.innerHTML = secondBubbleHint;
-        this.DOMbubble.classList.add('animated');
+        this.DOMbubble.setAttribute('data-bubble', 'second');
+        window.setTimeout(()=> {
+            this.DOMbubble.classList.add('animated')
+        },0);
+
     }
 
     if (whichHint === 2) {

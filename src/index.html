@@ -1,63 +1,67 @@
 <!DOCTYPE html>
 <html lang='en'>
-    <head>
+
+<head>
     <title>deck of cards</title>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta content='width=device-width, initial-scale=1, maximum-scale=1' name='viewport' />
     <link rel="stylesheet" type="text/css" href="css/style.css" />
-	</head>
-	<body>
-        <a target="_blank" href="http://www.pagat.com/rummy/ginrummy.html" id="trigger-overlay">INSTRUCTIONS (external site)</a>
-        <div id="score">
-            <div id="you">
-                <h1>You</h1>
-                <div>
-                    
-                </div>
-                <h6></h6>
+</head>
+
+<body>
+    <a target="_blank" href="http://www.pagat.com/rummy/ginrummy.html" id="trigger-overlay">INSTRUCTIONS (external site)</a>
+    <div id="score">
+        <div id="you">
+            <h1>You</h1>
+            <div>
+
             </div>
-            
-            <div id="joshua">
-                <h1>Joshua</h1>
-                <div>
-                    
-                </div>
-                <h6></h6>
+            <h6></h6>
+        </div>
+
+        <div id="joshua">
+            <h1>Joshua</h1>
+            <div>
+
             </div>
+            <h6></h6>
         </div>
-        <div id="comp_player">
-            <div id="comp_area">
-            
+    </div>
+    <div id="comp_player">
+        <div id="comp_area">
+
+        </div>
+    </div>
+
+    <div id="main_content">
+        <section id="deck">
+
+        </section>
+        <article>
+            <button id="deal">dealcards</button>
+            <button disabled id="reshuffle">reshuffle</button>
+            <button id="takeCard" class="hide">Take from deck</button>
+            <button id="knock" class="hide">Knock</button>
+        </article>
+        <section id="junkpileContainer"></section>
+    </div>
+
+    <div id="player">
+        <div id="area">
+        </div>
+    </div>
+
+    <div class="overlay overlay-door">
+        <button type="button" class="overlay-close">Close</button>
+        <section id="game_over">
+            <h1></h1>
+            <div>
+                <h2> </h2>
             </div>
-        </div>	
-                    
-        <div id="main_content">
-            <section id="deck">
-                
-            </section>
-            <article>
-                <button id="deal">dealcards</button> 
-                <button disabled id="reshuffle">reshuffle</button>
-                <button id="takeCard" class="hide">Take from deck</button> 
-                <button id="knock" class="hide">Knock</button> 
-            </article> 			
-        </div>
-        
-        <div id="player">
-            <div id="area">	
-            </div>
-        </div>
-        
-        <div class="overlay overlay-door">
-            <button type="button" class="overlay-close">Close</button>                                       
-            <section id="game_over">
-                <h1></h1>
-                <div><h2> </h2>
-                </div>                           
-            </section>           
-        </div>
-        <div data-bubble="first" class="bubble"> Click below to start game</div>
-        <script src="build.js" type="text/javascript"></script>
-        </body>	
-	</html>
-	
+        </section>
+    </div>
+    <div data-bubble="first" class="bubble"> Click below to start game</div>
+    <script src="build.js" type="text/javascript"></script>
+</body>
+
+</html>
