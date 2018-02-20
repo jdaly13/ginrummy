@@ -127,11 +127,12 @@ section.wrapper {
     }
   }
 
-  &.speedUpAnimation {
+  /*&.speedUpAnimation {
     > div {
       transition: all 0.8s ease 0.3s;
     }
   }
+  */
 }
 
 .player,
@@ -184,7 +185,7 @@ div:first-child a {
   text-decoration: none;
   cursor: default;
 
-  &.takeCardFromPile {
+  &.show {
     opacity: 100;
     cursor: pointer;
   }
