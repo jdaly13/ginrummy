@@ -72,9 +72,15 @@ h6:empty {
 #junkpileContainer {
   position: absolute;
   left: 410px;
-  > * {
+  > div {
     top: 32px;
+    display: flex;
     position: relative;
+
+    section {
+      margin-right: 25px;
+      position: relative;
+    }
   }
 }
 
@@ -154,10 +160,6 @@ section.wrapper {
       transform: rotateY(180deg);
     }
   }
-}
-
-.showdacard {
-  transition: transform 1s ease;
 }
 
 .comp_player {

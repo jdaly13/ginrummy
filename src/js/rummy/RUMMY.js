@@ -1,17 +1,23 @@
 import configureStore from '../store';
-import { playerDiscard } from '../actions';
+
 const store = configureStore();
 function RUMMY() {}
 RUMMY.prototype = {
   store,
-  discard(card, increment) {
-    console.log(card, increment);
-    this.DOMJunkPileContainer.append(card);
-    card.style.left = `${increment}px`;
-    this.store.dispatch(playerDiscard(increment));
-  },
+  /***********
+   second paramter ACTION
+    - topCard //decide which card top or discarded - call func to see which card
+    - falsy  //computer going through process to discard a particular card - may knock
+    - firstPlayer 
+        A.first player knocks check to see if legitmate knock by calling function to see if score is good 10 or below - set player.knocked to false
+    - computer 
+        B.if player knock is legitmate call func to check score of computer player
+    - findFirstPlayerScore
+        C. If computer player knocks call func to find first person score
+  
+   */
   decideWhichCard(cardElements, action = null) {
-    console.log(cardElements);
+    //console.log(cardElements);
     var array = [];
     Array.from(cardElements).forEach(ele => {
       array.push(ele.firstChild.getAttribute('class').split(' '));
@@ -23,27 +29,51 @@ RUMMY.prototype = {
     var sortedObj = this.sortObjOfArrays(obj);
     var sortedObjects = this.decideWhichOnesToKeep(sortedObj);
     var objectsGalore = this.findMatches(sortedObjects, action); //fix why we pass in action
-    let finalTotal = 0;
-    let stringToDiscard = '';
     let valueOfCard = false;
-    let frontSideOfCardToBeDiscarded = false;
-    console.dir(objectsGalore);
+    let frontSideOfCardToBeDiscarded = false; //DOM object
+    let cardToBeDiscarded = false; //DOM Object
+    let finalFilterObj = {};
+    let whatCardToRidThisTime = null;
+    let total = 0;
+
     if (action === 'dowetakediscardcard') {
       return this.doWeTakeTopCard(this.DOMJunkPileContainer, objectsGalore);
     }
-    var total = this.checkScore(objectsGalore);
-    console.log(total);
-    var whatCardToRidThisTime = this.shitPile(
+    total = this.checkScore(objectsGalore);
+
+    whatCardToRidThisTime = this.shitPile(
       objectsGalore.possibleDiscard,
       objectsGalore.maybes,
       objectsGalore.oneMatch
     );
-    console.log(whatCardToRidThisTime);
     valueOfCard = this.checkTheValueof(whatCardToRidThisTime, objectsGalore);
-    console.log(valueOfCard);
-    if (valueOfCard) {
-      whatCardToRidThisTime = valueOfCard;
+
+    finalFilterObj = this.finalFilter(
+      valueOfCard ? valueOfCard : whatCardToRidThisTime,
+      total,
+      objectsGalore
+    );
+
+    frontSideOfCardToBeDiscarded = this.findCardtoDiscard(
+      finalFilterObj.stringToDiscard,
+      objectsGalore.keepTheseOnes,
+      typeof finalFilterObj.whatCardToRidThisTime === 'number'
+        ? finalFilterObj.whatCardToRidThisTime
+        : null
+    );
+
+    if (finalFilterObj.finalTotal < 10) {
+      //dispatch event
+      /*computerKnock = true;
+      compPlayer.score = finalFilterObj.finalTotal;
+      compPlayer.deck = objectsGalore;
+      */
     }
+    return frontSideOfCardToBeDiscarded;
+  },
+  finalFilter(whatCardToRidThisTime, total, objectsGalore) {
+    let finalTotal = 0;
+    let stringToDiscard = '';
     if (typeof whatCardToRidThisTime === 'number') {
       finalTotal = total - whatCardToRidThisTime;
       stringToDiscard = '.' + this.cardArray[whatCardToRidThisTime - 1];
@@ -57,13 +87,20 @@ RUMMY.prototype = {
         '.' + this.cardArray[whatCardToRidThisTime[1] - 1];
       stringToDiscard = whatCardToRidThisTime.join(''); //hopefully fixed - should produce .clubs.ten
     }
-    console.log(finalTotal);
-    frontSideOfCardToBeDiscarded = this.findCardtoDiscard(
+    return {
+      finalTotal,
       stringToDiscard,
-      objectsGalore.keepTheseOnes,
-      typeof whatCardToRidThisTime === 'number' ? whatCardToRidThisTime : null
-    );
-    console.log(frontSideOfCardToBeDiscarded);
+      whatCardToRidThisTime
+    };
+  },
+  togglebutton(target) {
+    if (target) {
+      target.disabled = true;
+      target.nextElementSibling.disabled = false;
+    } else {
+      this.DOMtakeCardButton.disabled = false;
+      this.DOMknockButton.disabled = true;
+    }
   },
   furtherFilter(arr) {
     var obj = {};
@@ -458,7 +495,7 @@ RUMMY.prototype = {
     var element = junkPileContainer.lastElementChild.firstChild;
     var makeArray = element.getAttribute('class').split(' ');
     var dataValue = parseInt(element.getAttribute('data-value'));
-    console.log(makeArray, dataValue);
+    //console.log(makeArray, dataValue);
     var prop;
     var paleBlueEyes = makeArray.splice(0, 2);
     dataValue = dataValue == 10 ? this.cardValues[paleBlueEyes[1]] : dataValue;
@@ -704,7 +741,7 @@ RUMMY.prototype = {
 
       return classy;
     };
-    console.log(eleClass, keepTheseObj, numb);
+    //console.log(eleClass, keepTheseObj, numb);
     if (this.DOMcomp_playerArea.querySelectorAll(eleClass).length > 1 && numb) {
       var extradite = checkKeepTheseOnes(keepTheseObj),
         ele;

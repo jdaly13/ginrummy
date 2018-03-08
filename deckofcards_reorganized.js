@@ -90,19 +90,23 @@ RUMMY.prototype = {
         .addClass('delt');
     }
     if (!!player.knocked) {
+      //if player knocks
       this.preFilteringOfCreateArray($area.children(), 'firstPlayer');
       player.knocked = false;
       if (!!player.legitimateKnock) {
+        //if player can knock find score of computer
         this.preFilteringOfCreateArray(this.$comp_area.children(), 'computer');
         return false;
       }
     }
 
     if (!!arguments[3]) {
+      //if computer knocked find first player score
       this.preFilteringOfCreateArray($area.children(), 'findFirstPlayerScore');
       return false;
     }
     if (arguments[2] !== 'donotrun') {
+      // player discarded computer player take next card
       compPlayer.index++;
       window.setTimeout(function() {
         compPlayer.takeNextCard();

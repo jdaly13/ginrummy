@@ -1,12 +1,13 @@
 import { rummy } from './index';
 import helpfulhints from './helpfulhints';
+import { discard } from '../constants';
+import { playerDiscard } from '../actions';
+import { getOffset } from '../utils';
 
 const player = Object.create(rummy);
-
 player.takeFromDeck = function(e) {
   let i = false;
-  e.target.disabled = true;
-  e.target.nextElementSibling.disabled = false;
+  this.togglebutton(e.target);
   const topFromDeck = this.DOMdeck.lastElementChild;
 
   topFromDeck.classList.add('player', 'temp', 'speedUpAnimation');
@@ -18,21 +19,6 @@ player.takeFromDeck = function(e) {
       i = true;
     }
   });
-
-  //var $topFromDeck = $deck.find('.delt:first').prev() || $deck.find(':last-child').prev();
-  /* $topFromDeck.addClass('player temp speedUpAnimation').css({
-        '-webkit-transform': 'translateX(-50px)',
-        'transform': 'translateX(-50px)'
-    })
-        .removeStyle('top')
-        .one(transitionEndEvent, function () {
-            that.flipCards('new_card', $(this));
-            if (flag) removeHelpfulHints();
-            flag = false;
-        });
-        var $takebutton = $deck.children(':last-child').find('div').children('a.take');
-        $takebutton.hide();
-        */
 };
 
 player.flipcards = function(whichCard, ele) {
@@ -50,9 +36,37 @@ player.flipcards = function(whichCard, ele) {
     }
   });
 };
-
+//clean fix this up
 player.takeFromPile = function(e) {
-  if (e.target.className.contains('take')) {
+  if (e.target.classList.contains('take')) {
+    let i = false;
+    e.target.classList.remove('take');
+    e.target.textContent = discard;
+    e.target.parentElement.classList.remove('taketopCard');
+    let card = e.target.parentElement.parentElement;
+    console.log(getOffset(card));
+    console.log(getOffset(this.DOMplayer));
+    var test = getOffset(card).left - getOffset(this.DOMplayer).left;
+    console.log(test);
+    card.classList.add('player', 'speedUpAnimation');
+    //card.style.transform = 'translate(-250px, 198px)'; //fix this !!!!
+    card.style.transform = 'translate(' + -test + 'px, 198px)';
+
+    card.addEventListener('transitionend', e => {
+      if (!i) {
+        card.removeAttribute('style');
+        card.classList.remove(
+          'temp',
+          'speedUpAnimation',
+          'showdacard',
+          'junkpile'
+        );
+        this.DOMplayerArea.prepend(card);
+        this.toggleDiscardState();
+        // dispatch event
+        i = true;
+      }
+    });
   }
 };
 
@@ -64,32 +78,35 @@ player.toggleDiscardState = function() {
   );
 };
 
-player.discardCard = function(e, increment) {
+player.preDiscardCard = function(e) {
   if (e.target.classList.contains('show')) {
     const card = e.target.parentElement.parentElement;
     this.toggleDiscardState();
-    this.discard(card, increment);
+    this.discard(card);
     e.preventDefault();
   }
 };
 
-player.userEvents = function(junkpilemargin) {
-  let increment = 0;
+player.discard = function(card) {
+  this.DOMJunkPileContainer.append(card);
+  this.store.dispatch(playerDiscard());
+};
+
+player.userEvents = function() {
   this.DOMtakeCardButton.addEventListener(
     'click',
     this.takeFromDeck.bind(this)
   );
-  this.DOMreshuffleButton.addEventListener(
+
+  this.DOMJunkPileContainer.addEventListener(
     'click',
     this.takeFromPile.bind(this)
   );
   //this.DOMknockButton.addEventListener('click', this.playerKnock.bind(this));
   this.DOMplayerArea.addEventListener('click', e => {
     if (e.target.classList.contains('show')) {
-      increment += junkpilemargin;
-      this.discardCard(e, increment);
+      this.preDiscardCard(e);
     }
   });
 };
-
 export { player };

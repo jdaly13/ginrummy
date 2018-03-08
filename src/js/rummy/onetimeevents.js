@@ -21,7 +21,6 @@ oneTimeEvents.createarrayofcards = function(callcreatehtmldeck) {
     }
   }
   this.whole_deck = shuffle(arr); //shuffling the deck
-  console.log(this.whole_deck);
   if (callcreatehtmldeck) {
     this.fillinmaincontent();
     this.loopthroughdiv();
@@ -91,10 +90,14 @@ oneTimeEvents.dealcards = function(e) {
     e.target.setAttribute('disabled', 'disabled');
   }
 
-  wrappers[whenToStop + 1].addEventListener('transitionend', () => {
-    this.store.dispatch(dealCards('cardsDelt'));
-    this.flipNewDeck();
-  });
+  wrappers[whenToStop + 1].addEventListener(
+    'transitionend',
+    () => {
+      this.store.dispatch(dealCards('cardsDelt'));
+      this.flipNewDeck();
+    },
+    { once: true }
+  );
   for (i; i > whenToStop; i--) {
     if (i % 2 === 1) {
       //player
@@ -139,15 +142,19 @@ oneTimeEvents.flipNewDeck = function() {
   Array.from(first_player).forEach((ele, index) => {
     ele.style.zIndex = zIndex - index;
     ele.classList.add('flipchild');
-    ele.addEventListener('transitionend', e => {
-      ele.removeAttribute('style');
-      this.DOMplayer.style.top = fp_top + 'px';
-      this.DOMplayerArea.append(ele);
-      if (index === 0) {
-        this.store.dispatch(flipNewDeck('flippedDeck'));
-        this.makeDeckSortable();
-      }
-    });
+    ele.addEventListener(
+      'transitionend',
+      e => {
+        ele.removeAttribute('style');
+        this.DOMplayer.style.top = fp_top + 'px';
+        this.DOMplayerArea.append(ele);
+        if (index === 0) {
+          this.store.dispatch(flipNewDeck('flippedDeck'));
+          this.makeDeckSortable();
+        }
+      },
+      { once: true }
+    );
   });
 
   Array.from(comp_player).forEach((ele, i) => {
@@ -157,29 +164,54 @@ oneTimeEvents.flipNewDeck = function() {
 };
 
 oneTimeEvents.makeDeckSortable = function() {
-  Sortable.create(this.DOMplayerArea);
+  rummy.sortable = Sortable.create(this.DOMplayerArea, {
+    draggable: '.wrapper',
+    onAdd: function(e) {
+      console.log('add', e);
+    },
+    onRemove: function(e) {
+      console.log('remove', e);
+    },
+    onMove: function(e) {
+      console.log(e);
+    }
+  });
+  rummy.DOMplayerArea = rummy.sortable.el;
   this.dealfirstcard();
 };
 
 oneTimeEvents.dealfirstcard = function() {
   const deckLastZChild = this.DOMdeck.lastElementChild;
+  const firstChild = deckLastZChild.firstElementChild;
   const actionLink = deckLastZChild.querySelector('a');
   deckLastZChild.style.transform = 'translate( 190px, 32px)';
   deckLastZChild.classList.add('showdacard', 'junkpile');
 
   helpfulhints.showHint(1);
 
-  deckLastZChild.addEventListener('transitionend', event => {
-    deckLastZChild.classList.add('flipchild');
-    actionLink.textContent = 'TAKE';
-    actionLink.classList.add('takeCardFromPile');
-    this.DOMtakeCardButton.classList.remove('hide');
-    this.DOMreshuffleButton.removeAttribute('disabled');
-    //fix this and make it on flipcard transition end instead of showdacard animation
-    //dispatch an event here
-    event.target.removeAttribute('style');
-    this.DOMJunkPileContainer.append(event.target);
-  });
+  deckLastZChild.addEventListener(
+    'transitionend',
+    e => {
+      var copyofElement = deckLastZChild;
+      copyofElement.classList.add('flipchild');
+      copyofElement.addEventListener(
+        'transitionend',
+        event => {
+          actionLink.textContent = 'TAKE';
+          actionLink.classList.add('take');
+          firstChild.classList.add('taketopCard');
+          this.DOMtakeCardButton.classList.remove('hide');
+          this.DOMreshuffleButton.removeAttribute('disabled');
+          //fix this and make it on flipcard transition end instead of showdacard animation
+          //dispatch an event here
+          e.target.removeAttribute('style');
+          this.DOMJunkPileContainer.append(e.target);
+        },
+        { once: true }
+      );
+    },
+    { once: true }
+  );
 };
 
 oneTimeEvents.reshuffle = function() {

@@ -26,9 +26,14 @@ export function createDeck(text) {
   };
 }
 
-export function playerDiscard(number) {
+export function playerDiscard() {
   return {
-    type: 'DISCARD_CARD',
-    number
+    type: 'DISCARD_CARD'
+  };
+}
+
+export function joshuaDiscard() {
+  return {
+    type: 'JOSHUA_DISCARD_CARD'
   };
 }

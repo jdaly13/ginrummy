@@ -3,7 +3,8 @@ import {
   reshuffle,
   dealCards,
   createDeck,
-  playerDiscard
+  playerDiscard,
+  joshuaDiscard
 } from './game';
 import { updateScore } from './score';
 
@@ -13,5 +14,6 @@ export {
   dealCards,
   updateScore,
   createDeck,
-  playerDiscard
+  playerDiscard,
+  joshuaDiscard
 };

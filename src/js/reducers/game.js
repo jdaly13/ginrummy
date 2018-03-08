@@ -1,10 +1,3 @@
-/*import {
-	TETROMINO_ADD,
-	TETROMINO_MOVE,
-	TETROMINO_ROTATE
-} from '../constants/tetromino'
-*/
-
 const initialState = {
   delt: false,
   cardsFlipped: false,
@@ -12,7 +5,7 @@ const initialState = {
   index: 0,
   deck: false,
   playerDiscard: false,
-  increment: 0
+  joshuaDiscard: false
 };
 
 let index = 0;
@@ -39,8 +32,12 @@ export default function game(state = initialState, action) {
       });
     case 'DISCARD_CARD':
       return Object.assign({}, state, {
-        playerDiscard: !state.playerDiscard,
-        increment: action.number
+        playerDiscard: !state.playerDiscard
+      });
+    case 'JOSHUA_DISCARD_CARD':
+      return Object.assign({}, state, {
+        joshuaDiscard: !state.joshuaDiscard,
+        playerDiscard: !state.playerDiscard
       });
     default:
       return state;
