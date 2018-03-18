@@ -5,7 +5,8 @@ const initialState = {
   index: 0,
   deck: false,
   playerDiscard: false,
-  joshuaDiscard: false
+  joshuaDiscard: false,
+  noOfCardsDiscarded: 0
 };
 
 let index = 0;
@@ -32,12 +33,14 @@ export default function game(state = initialState, action) {
       });
     case 'DISCARD_CARD':
       return Object.assign({}, state, {
-        playerDiscard: !state.playerDiscard
+        playerDiscard: !state.playerDiscard,
+        noOfCardsDiscarded: ++state.noOfCardsDiscarded
       });
     case 'JOSHUA_DISCARD_CARD':
       return Object.assign({}, state, {
         joshuaDiscard: !state.joshuaDiscard,
-        playerDiscard: !state.playerDiscard
+        playerDiscard: !state.playerDiscard,
+        noOfCardsDiscarded: ++state.noOfCardsDiscarded
       });
     default:
       return state;

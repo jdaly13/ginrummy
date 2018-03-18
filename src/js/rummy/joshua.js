@@ -1,6 +1,7 @@
 //computer player
 import { rummy } from './index';
 import { joshuaDiscard, playerDiscard } from '../actions';
+import { getOffset } from '../utils';
 const joshua = Object.create(rummy);
 
 function procureHand() {
@@ -13,11 +14,14 @@ joshua.frontOfcardToDiscard = null;
 joshua.chooseWisely = function(discardcard) {
   const topFromDeck = this.DOMdeck.lastElementChild;
   const mostRecentJunkPile = this.DOMJunkPileContainer.lastElementChild;
-  return discardcard ? mostRecentJunkPile : topFromDeck;
+  return {
+    card: discardcard ? mostRecentJunkPile : topFromDeck,
+    junkPile: discardcard ? true : false
+  };
 };
 
 joshua.takeCardProcess = function() {
-  let cardToTake;
+  let cardToTakeObj;
   this.store.subscribe(() => {
     console.log(this.store.getState().game.playerDiscard);
     if (this.store.getState().game.playerDiscard) {
@@ -26,30 +30,29 @@ joshua.takeCardProcess = function() {
           procureHand.call(this),
           'dowetakediscardcard'
         );
-        cardToTake = this.chooseWisely(doesJoshuatakeTopDiscardedcar);
-        this.addCardToJoshuaHand(cardToTake);
+        cardToTakeObj = this.chooseWisely(doesJoshuatakeTopDiscardedcar);
+        this.addCardToJoshuaHand(cardToTakeObj.card, cardToTakeObj.junkPile);
       }, 1000);
-    }
-
-    if (this.store.getState().game.joshuaDiscard) {
-      this.cardToDiscard.style.left = `${
-        this.store.getState().game.increment
-      }px`;
     }
   });
 };
 
-joshua.addCardToJoshuaHand = function(card) {
+joshua.addCardToJoshuaHand = function(card, junkPile) {
   let whatCard;
   let i = false;
+  console.log(card, this.DOMcomp_playerArea);
+  let position = getOffset(card).left - getOffset(this.DOMcomp_playerArea).left;
   card.classList.remove('flipchild', 'player', 'speedUpAnimation');
   card.classList.add('comp_player', 'temp');
-  card.style.transform = 'translate(1000px, -200px)'; //fix this
+  if (junkPile) {
+    card.style.transform = 'translate(' + -position + 'px, -200px)';
+  } else {
+    card.style.transform = 'translate(0px, -200px)';
+  }
   card.addEventListener('transitionend', e => {
     if (!i) {
       card.removeAttribute('style');
       this.DOMcomp_playerArea.append(card);
-      //this.store.dispatch();
       this.frontOfcardToDiscard = this.decideWhichCard(procureHand.call(this));
       this.cardToDiscard = this.frontOfcardToDiscard.parentElement;
       this.discardOfCard();
@@ -59,7 +62,6 @@ joshua.addCardToJoshuaHand = function(card) {
 };
 
 joshua.discardOfCard = function() {
-  console.log('discardOfCard');
   let anchor = this.frontOfcardToDiscard.querySelector('a');
   this.frontOfcardToDiscard.classList.add('taketopCard');
   anchor.textContent = 'TAKE';

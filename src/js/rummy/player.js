@@ -31,7 +31,7 @@ player.flipcards = function(whichCard, ele) {
       ele.classList.add('delt');
       this.DOMplayerArea.prepend(ele);
       // this.store.dispatch(flipNewDeck('flippedDeck')); added new card
-      this.toggleDiscardState();
+      this.toggleDiscardState('takeFromDeck');
       i = true;
     }
   });
@@ -39,18 +39,16 @@ player.flipcards = function(whichCard, ele) {
 //clean fix this up
 player.takeFromPile = function(e) {
   if (e.target.classList.contains('take')) {
-    let i = false;
+    this.togglebutton(this.DOMtakeCardButton);
+    let i = false,
+      position = 0,
+      card = e.target.parentElement.parentElement;
     e.target.classList.remove('take');
     e.target.textContent = discard;
     e.target.parentElement.classList.remove('taketopCard');
-    let card = e.target.parentElement.parentElement;
-    console.log(getOffset(card));
-    console.log(getOffset(this.DOMplayer));
-    var test = getOffset(card).left - getOffset(this.DOMplayer).left;
-    console.log(test);
+    position = getOffset(card).left - getOffset(this.DOMplayer).left;
     card.classList.add('player', 'speedUpAnimation');
-    //card.style.transform = 'translate(-250px, 198px)'; //fix this !!!!
-    card.style.transform = 'translate(' + -test + 'px, 198px)';
+    card.style.transform = 'translate(' + -position + 'px, 198px)';
 
     card.addEventListener('transitionend', e => {
       if (!i) {
@@ -62,7 +60,7 @@ player.takeFromPile = function(e) {
           'junkpile'
         );
         this.DOMplayerArea.prepend(card);
-        this.toggleDiscardState();
+        this.toggleDiscardState('takeFromPile');
         // dispatch event
         i = true;
       }
@@ -70,12 +68,18 @@ player.takeFromPile = function(e) {
   }
 };
 
-player.toggleDiscardState = function() {
+player.toggleDiscardState = function(which) {
   Array.from(this.DOMplayerArea.querySelectorAll('.wrapper')).forEach(
     (ele, i) => {
       ele.querySelector('a').classList.toggle('show');
     }
   );
+  if (which === 'takeFromDeck') {
+    this.DOMJunkPileContainer.lastElementChild.firstElementChild.classList.remove(
+      'taketopCard'
+    );
+  }
+  this.DOMtakeCardButton.setAttribute('disabled', true);
 };
 
 player.preDiscardCard = function(e) {

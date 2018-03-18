@@ -201,6 +201,7 @@ oneTimeEvents.dealfirstcard = function() {
           actionLink.classList.add('take');
           firstChild.classList.add('taketopCard');
           this.DOMtakeCardButton.classList.remove('hide');
+          this.DOMknockButton.classList.remove('hide');
           this.DOMreshuffleButton.removeAttribute('disabled');
           //fix this and make it on flipcard transition end instead of showdacard animation
           //dispatch an event here
