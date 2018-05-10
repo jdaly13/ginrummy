@@ -20,6 +20,8 @@ currently create deck of cards, shuffle and deal them
 ###USE LOCALLY NEW VERSION in Developement
 
 ```
+npm install gulp
+npm install
 gulp start
 ```
 
