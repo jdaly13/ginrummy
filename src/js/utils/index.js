@@ -46,3 +46,19 @@ export function getOffset(el) {
     top: el.top + window.scrollY
   };
 }
+
+export function cloneObjectOfArrays(obj) {
+  if(obj===null || typeof obj !== "object"){
+    return obj;
+  } else if(Array.isArray(obj)){
+    return obj.slice(0)
+  } else{
+    let clonedObj = {};
+    for(var prop in obj){
+      if(obj.hasOwnProperty(prop)){
+        clonedObj[prop] = cloneObjectOfArrays(obj[prop]);
+      }
+    }
+    return clonedObj;
+  }
+}
