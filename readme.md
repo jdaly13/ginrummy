@@ -24,5 +24,6 @@ npm install gulp
 npm install
 gulp start
 ```
+should open up browser tab - hit refresh if you don't see cards
 
 on plyer events last leftoff on player.js flipcards need to implement take card then discard card as well then to algorithms

@@ -1,5 +1,6 @@
 import configureStore from '../store';
 import { findFirstPlayerTotalValue, findJoshuaTotalValue } from '../actions';
+import {cloneObjectOfArrays} from '../utils';
 
 const store = configureStore();
 function RUMMY() {}
@@ -7,7 +8,7 @@ RUMMY.prototype = {
   store,
   /***********
    second paramter ACTION
-    - topCard //decide which card top or discarded - call func to see which card
+    - dowetakediscardcard //Joshu decides which card top or discarded for next turn call func to see which card
     - falsy  //computer going through process to discard a particular card - may knock
     - firstPlayer 
         A.first player knocks check to see if legitmate knock by calling function to see if score is good 10 or below - set player.knocked to false
@@ -32,11 +33,10 @@ RUMMY.prototype = {
     var objectsGalore = this.findMatches(sortedObjects, action); //fix why we pass in action
     let valueOfCard = false;
     let frontSideOfCardToBeDiscarded = false; //DOM object
-    let cardToBeDiscarded = false; //DOM Object
     let finalFilterObj = {};
     let whatCardToRidThisTime = null;
     let total = 0;
-
+ 
     if (action === 'dowetakediscardcard') {
       return this.doWeTakeTopCard(this.DOMJunkPileContainer, objectsGalore);
     }
@@ -63,19 +63,19 @@ RUMMY.prototype = {
       objectsGalore.maybes,
       objectsGalore.oneMatch
     );
-    console.log(whatCardToRidThisTime)
-    valueOfCard = this.checkTheValueof(whatCardToRidThisTime, objectsGalore);
+    //return array first spot is either false or an array itself [[], newClonedObj]
+    valueOfCardAndObjectsGaloreNew = this.checkTheValueof(whatCardToRidThisTime, objectsGalore);
 
     finalFilterObj = this.finalFilter(
-      valueOfCard ? valueOfCard : whatCardToRidThisTime,
+      valueOfCardAndObjectsGaloreNew[0] ? valueOfCardAndObjectsGaloreNew[0] : whatCardToRidThisTime,
       total,
-      objectsGalore
+      valueOfCardAndObjectsGaloreNew[1]
     );
     console.log(finalFilterObj);
 
     frontSideOfCardToBeDiscarded = this.findCardtoDiscard(
       finalFilterObj.stringToDiscard,
-      objectsGalore.keepTheseOnes,
+      valueOfCardAndObjectsGaloreNew[1].keepTheseOnes,
       typeof finalFilterObj.whatCardToRidThisTime === 'number'
         ? finalFilterObj.whatCardToRidThisTime
         : null
@@ -122,22 +122,27 @@ RUMMY.prototype = {
     }
   },
   furtherFilter(arr) {
-    var obj = {};
+    const obj = {};
+    console.log(arr);
     arr.forEach(value => {
-      if (!obj[value[0]]) obj[value[0]] = [];
+      if (!obj[value[0]]) {
+        obj[value[0]] = [];
+      }
       obj[value[0]].push(this.cardValues[value[1]]);
     });
     return obj;
   },
   sortObjOfArrays: function(object) {
+    var copy = cloneObjectOfArrays(object);
     this.cardSuits.forEach(value => {
-      if (!object[value]) object[value] = [];
-      object[value].sort((a, b) => {
+      if (!object[value]) {
+        copy[value] = [];
+      } 
+      copy[value].sort((a, b) => {
         return a - b;
       });
     });
-
-    return object;
+    return copy;
   },
   decideWhichOnesToKeep: function(obj) {
     //http://jsfiddle.net/9joukzhv/1/ - http://jsfiddle.net/9joukzhv/2/
@@ -219,11 +224,12 @@ RUMMY.prototype = {
   findMatches: function(objOfObjects, playa) {
     //SOLUTION http://jsfiddle.net/25nh54dp/34/ // http://jsfiddle.net/25nh54dp/37/ line ~516 -- FIX THIS http://jsfiddle.net/25nh54dp/38/(screenshot)
     //http://jsfiddle.net/25nh54dp/40/
+const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
     var properties = this.cardSuits;
     var testArray = [];
     var keepArray = [];
     var sortDiscard = false;
-    var keysOfObjects = Object.keys(objOfObjects);
+    var keysOfObjects = Object.keys(clonedObjectofObjects);
     var multipleHandsOneSuit = function(arr, suit) {
       if (arr.length > 7) return false;
       arr.some(function(value, index, array) {
@@ -245,19 +251,19 @@ RUMMY.prototype = {
       if (value === 'keepTheseOnes') {
         properties.forEach(function(val, index, array) {
           var first, last, middle;
-          if (objOfObjects[value][val].length >= 3) {
+          if (clonedObjectofObjects[value][val].length >= 3) {
             if (
-              objOfObjects[value][val][objOfObjects[value][val].length - 1] -
-                objOfObjects[value][val][0] !==
-              objOfObjects[value][val].length - 1
+              clonedObjectofObjects[value][val][clonedObjectofObjects[value][val].length - 1] -
+                clonedObjectofObjects[value][val][0] !==
+              clonedObjectofObjects[value][val].length - 1
             ) {
-              multipleHandsOneSuit(objOfObjects[value][val], val);
+              multipleHandsOneSuit(clonedObjectofObjects[value][val], val);
             } else {
-              first = objOfObjects[value][val][0];
+              first = clonedObjectofObjects[value][val][0];
               last =
-                objOfObjects[value][val][objOfObjects[value][val].length - 1];
-              if (objOfObjects[value][val].length === 3) {
-                middle = objOfObjects[value][val][1];
+                clonedObjectofObjects[value][val][clonedObjectofObjects[value][val].length - 1];
+              if (clonedObjectofObjects[value][val].length === 3) {
+                middle = clonedObjectofObjects[value][val][1];
                 keepArray.push(first, middle, last);
               } else {
                 keepArray.push(first, last);
@@ -267,7 +273,7 @@ RUMMY.prototype = {
         });
       } else {
         properties.forEach(function(val, index, arrary) {
-          objOfObjects[value][val].forEach(function(v, ind, ar) {
+          clonedObjectofObjects[value][val].forEach(function(v, ind, ar) {
             testArray.push(v);
           });
         });
@@ -278,8 +284,8 @@ RUMMY.prototype = {
       return a - b;
     });
 
-    objOfObjects.oneMatch = [];
-    objOfObjects.moreThanOneMatch = [];
+    clonedObjectofObjects.oneMatch = [];
+    clonedObjectofObjects.moreThanOneMatch = [];
 
     function findDupes(arr) {
       var counts = {};
@@ -295,12 +301,12 @@ RUMMY.prototype = {
         }
 
         if (counts[prop] == 2) {
-          objOfObjects.oneMatch.push(parseInt(prop));
+          clonedObjectofObjects.oneMatch.push(parseInt(prop));
           matches = true;
         }
 
         if (counts[prop] > 2) {
-          objOfObjects.moreThanOneMatch.push(parseInt(prop));
+          clonedObjectofObjects.moreThanOneMatch.push(parseInt(prop));
           matches = true;
         }
       }
@@ -311,33 +317,33 @@ RUMMY.prototype = {
     if (!!matches) {
       var keepArrayMatches = compareWithkeepArray();
       removeFromDiscard(
-        objOfObjects.oneMatch,
-        objOfObjects.moreThanOneMatch,
+        clonedObjectofObjects.oneMatch,
+        clonedObjectofObjects.moreThanOneMatch,
         keepArrayMatches
       );
       goThroughKeepTheseOnesAgain();
       if (!!sortDiscard) sortDiscardPile();
-      return objOfObjects;
+      return clonedObjectofObjects;
     } else {
-      return objOfObjects;
+      return clonedObjectofObjects;
     }
 
     function removeFromDiscard(arr1, arry2) {
       var arr = arr1.concat(arry2),
         endSecondLoop;
       function loop(j, discardOrMaybe, third) {
-        for (var prop in objOfObjects[discardOrMaybe]) {
-          for (var i = 0; i < objOfObjects[discardOrMaybe][prop].length; i++)
-            if (arr[j] == objOfObjects[discardOrMaybe][prop][i]) {
+        for (var prop in clonedObjectofObjects[discardOrMaybe]) {
+          for (var i = 0; i < clonedObjectofObjects[discardOrMaybe][prop].length; i++)
+            if (arr[j] == clonedObjectofObjects[discardOrMaybe][prop][i]) {
               if (discardOrMaybe === 'keepTheseOnes' && third) {
                 //so we don't remove something from keepTheseOnes simply because it matches a value in one match http://jsfiddle.net/25nh54dp/44/
                 third.forEach(function(keepArrayMatchValue) {
                   if (keepArrayMatchValue === arr[j]) {
-                    objOfObjects[discardOrMaybe][prop].splice(i, 1);
+                    clonedObjectofObjects[discardOrMaybe][prop].splice(i, 1);
                   }
                 });
               } else {
-                objOfObjects[discardOrMaybe][prop].splice(i, 1);
+                clonedObjectofObjects[discardOrMaybe][prop].splice(i, 1);
               }
             }
         }
@@ -363,25 +369,25 @@ RUMMY.prototype = {
     function goThroughKeepTheseOnesAgain() {
       var tempArray = [];
       properties.forEach(function(val, index, array) {
-        objOfObjects.keepTheseOnes[val].forEach(function(value, i, arr) {
+        clonedObjectofObjects.keepTheseOnes[val].forEach(function(value, i, arr) {
           if (arr.length < 3) {
             if (i === 0) {
               tempArray.push(val);
             }
-            objOfObjects.possibleDiscard[val].push(value);
-            objOfObjects.possibleDiscard[val].sort(function(a, b) {
+            clonedObjectofObjects.possibleDiscard[val].push(value);
+            clonedObjectofObjects.possibleDiscard[val].sort(function(a, b) {
               return a - b;
             });
           }
         });
       });
       tempArray.forEach(function(val, index, array) {
-        objOfObjects.keepTheseOnes[val] = []; //EMPTY THAT SHIT OUT YO BUG FIXED!
+        clonedObjectofObjects.keepTheseOnes[val] = []; //EMPTY THAT SHIT OUT YO BUG FIXED!
       });
     }
 
     function sortDiscardPile() {
-      objOfObjects.possibleDiscard[keepArray.multiple].sort(function(a, b) {
+      clonedObjectofObjects.possibleDiscard[keepArray.multiple].sort(function(a, b) {
         return a - b;
       });
     }
@@ -411,10 +417,10 @@ RUMMY.prototype = {
       };
       var spliceItOut = function(arr) {
         arr.forEach(function(value) {
-          objOfObjects.oneMatch.forEach(function(val, index, array) {
+          clonedObjectofObjects.oneMatch.forEach(function(val, index, array) {
             console.log(val);
             if (value === val) {
-              objOfObjects.oneMatch.splice(index, 1);
+              clonedObjectofObjects.oneMatch.splice(index, 1);
             }
           });
         });
@@ -457,14 +463,14 @@ RUMMY.prototype = {
           if (oddOrEven === 'odd') return false;
           if (!!odd) {
             arr.splice(index - 2, 2);
-            objOfObjects.possibleDiscard[keepArray.multiple].push(
+            clonedObjectofObjects.possibleDiscard[keepArray.multiple].push(
               num - 1,
               num - 2
             );
           } else {
             //even is true
             arr.splice(index + 1, 2);
-            objOfObjects.possibleDiscard[keepArray.multiple].push(
+            clonedObjectofObjects.possibleDiscard[keepArray.multiple].push(
               num + 1,
               num + 2
             );
@@ -472,7 +478,7 @@ RUMMY.prototype = {
           sortDiscard = true;
         };
         arrrrrrray.forEach(function(v, i, a) {
-          objOfObjects.keepTheseOnes[keepArray.multiple].forEach(function(
+          clonedObjectofObjects.keepTheseOnes[keepArray.multiple].forEach(function(
             value,
             index,
             array
@@ -484,13 +490,13 @@ RUMMY.prototype = {
         });
       };
       if (keepArray.length > 5) return false; // they have at least
-      while (i < objOfObjects.oneMatch.length) {
-        var freshFeeling = doeTheyMatch(objOfObjects.oneMatch[i]);
+      while (i < clonedObjectofObjects.oneMatch.length) {
+        var freshFeeling = doeTheyMatch(clonedObjectofObjects.oneMatch[i]);
         if (!!freshFeeling) {
-          //objOfObjects.oneMatch.splice(i, 1);//fix this
+          //clonedObjectofObjects.oneMatch.splice(i, 1);//fix this
           //LEFT OFF HERE - check against keepArray here
-          objOfObjects.moreThanOneMatch.push(freshFeeling);
-          objOfObjects.moreThanOneMatch.sort(function(a, b) {
+          clonedObjectofObjects.moreThanOneMatch.push(freshFeeling);
+          clonedObjectofObjects.moreThanOneMatch.sort(function(a, b) {
             return a - b;
           });
           matchMade = true;
@@ -643,22 +649,24 @@ RUMMY.prototype = {
     return addUpValues(totalCountAll);
   },
   checkTheValueof: function(val, objectsGalore) {
+    let copyOfObjectsGalore = cloneObjectOfArrays(objectsGalore);
     if (typeof val == 'string') {
       var didwegetMatch = this.checkOneMatch(
-        objectsGalore.oneMatch,
-        objectsGalore.keepTheseOnes
+        copyOfObjectsGalore.oneMatch,
+        copyOfObjectsGalore.keepTheseOnes
       );
       if (!!didwegetMatch) {
-        objectsGalore = this.removeFromOneMatchAddToMoreThanOneMatch(
-          objectsGalore,
+        copyOfObjectsGalore = this.removeFromOneMatchAddToMoreThanOneMatch(
+          copyOfObjectsGalore,
           didwegetMatch
         );
+        return [false, copyOfObjectsGalore]
       } else {
-        var whichMatch = this.lookAtOneMatch(objectsGalore.oneMatch);
-        return whichMatch;
+        var whichMatch = this.lookAtOneMatch(copyOfObjectsGalore.oneMatch);
+        return [whichMatch, copyOfObjectsGalore]
       }
     } else {
-      return false;
+      return [false, copyOfObjectsGalore];
     }
   },
   removeFromOneMatchAddToMoreThanOneMatch: function(obj, finalNum) {

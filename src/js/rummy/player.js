@@ -1,5 +1,4 @@
 import { rummy } from './index';
-import helpfulhints from './helpfulhints';
 import { discard } from '../constants';
 import { playerDiscard, playerKnock } from '../actions';
 import { getOffset } from '../utils';
