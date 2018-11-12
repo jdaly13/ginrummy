@@ -1,7 +1,7 @@
 import { rummy } from './index';
 import helpfulhints from './helpfulhints';
 import { discard } from '../constants';
-import { playerDiscard } from '../actions';
+import { playerDiscard, playerKnock } from '../actions';
 import { getOffset } from '../utils';
 
 const player = Object.create(rummy);
@@ -93,7 +93,26 @@ player.preDiscardCard = function(e) {
 
 player.discard = function(card) {
   this.DOMJunkPileContainer.append(card);
-  this.store.dispatch(playerDiscard());
+  console.log(this.store.getState().game.playerKnock)
+  if(this.store.getState().game.playerKnock) { //see if player knocked
+    const legitmateKnock = this.decideWhichCard(this.DOMplayer.querySelectorAll('.wrapper'), 'firstPlayerKnock');  // do they have enough to knock
+    if(!legitmateKnock) { //not enough to knock
+      window.alert("you don't have enough to knock");
+      this.store.dispatch(playerKnock()) //player knock if false now
+      this.store.dispatch(playerDiscard());
+    } else { //enough to knock 
+      this.decideWhichCard(this.DOMcomp_playerArea.querySelectorAll('.wrapper'), 'getJoshuaScore'); //get computer score
+    }
+  } else {
+    this.store.dispatch(playerDiscard());
+  }
+
+};
+
+player.playerKnock = function (e) {
+  window.alert('please choose one last card to discard');
+  e.target.disabled = true;
+  this.store.dispatch(playerKnock()) //player knock is true
 };
 
 player.userEvents = function() {
@@ -106,7 +125,7 @@ player.userEvents = function() {
     'click',
     this.takeFromPile.bind(this)
   );
-  //this.DOMknockButton.addEventListener('click', this.playerKnock.bind(this));
+  this.DOMknockButton.addEventListener('click', this.playerKnock.bind(this));
   this.DOMplayerArea.addEventListener('click', e => {
     if (e.target.classList.contains('show')) {
       this.preDiscardCard(e);

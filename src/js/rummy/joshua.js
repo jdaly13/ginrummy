@@ -1,6 +1,6 @@
 //computer player
 import { rummy } from './index';
-import { joshuaDiscard, playerDiscard } from '../actions';
+import { joshuaDiscard } from '../actions';
 import { getOffset } from '../utils';
 const joshua = Object.create(rummy);
 

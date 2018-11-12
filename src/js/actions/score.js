@@ -4,3 +4,17 @@ export function updateScore (text) {
 		text
 	}
 }
+
+export function findFirstPlayerTotalValue (value) {
+	return {
+		type:'FIRST_PLAYER_FINAL_VALUE',
+		value
+	}
+}
+
+export function findJoshuaTotalValue(value) {
+	return {
+		type: 'JOSHUA_FINAL_VALUE',
+		value
+	}
+}

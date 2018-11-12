@@ -4,9 +4,10 @@ import {
   dealCards,
   createDeck,
   playerDiscard,
-  joshuaDiscard
+  joshuaDiscard,
+  playerKnock
 } from './game';
-import { updateScore } from './score';
+import { updateScore, findFirstPlayerTotalValue, findJoshuaTotalValue } from './score';
 
 export {
   flipNewDeck,
@@ -15,5 +16,8 @@ export {
   updateScore,
   createDeck,
   playerDiscard,
-  joshuaDiscard
+  joshuaDiscard,
+  playerKnock,
+  findFirstPlayerTotalValue,
+  findJoshuaTotalValue
 };

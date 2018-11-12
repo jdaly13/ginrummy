@@ -37,3 +37,10 @@ export function joshuaDiscard() {
     type: 'JOSHUA_DISCARD_CARD'
   };
 }
+
+export function playerKnock() {
+  return {
+    type: 'PLAYER_KNOCK'
+  }
+}
+

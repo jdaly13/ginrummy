@@ -1,4 +1,5 @@
 import configureStore from '../store';
+import { findFirstPlayerTotalValue, findJoshuaTotalValue } from '../actions';
 
 const store = configureStore();
 function RUMMY() {}
@@ -40,12 +41,29 @@ RUMMY.prototype = {
       return this.doWeTakeTopCard(this.DOMJunkPileContainer, objectsGalore);
     }
     total = this.checkScore(objectsGalore);
+    console.log(total);
+
+    if (action === 'firstPlayerKnock') {
+      if (total <= 10) {
+        store.dispatch(findFirstPlayerTotalValue(total));
+        return true
+      } else {
+        return false;
+      }
+
+    }
+
+    if (action === 'getJoshuaScore') { //player initiated knock
+      store.dispatch(findJoshuaTotalValue(total));
+    }
+
 
     whatCardToRidThisTime = this.shitPile(
       objectsGalore.possibleDiscard,
       objectsGalore.maybes,
       objectsGalore.oneMatch
     );
+    console.log(whatCardToRidThisTime)
     valueOfCard = this.checkTheValueof(whatCardToRidThisTime, objectsGalore);
 
     finalFilterObj = this.finalFilter(
@@ -53,6 +71,7 @@ RUMMY.prototype = {
       total,
       objectsGalore
     );
+    console.log(finalFilterObj);
 
     frontSideOfCardToBeDiscarded = this.findCardtoDiscard(
       finalFilterObj.stringToDiscard,
@@ -62,7 +81,7 @@ RUMMY.prototype = {
         : null
     );
 
-    if (finalFilterObj.finalTotal < 10) {
+    if (finalFilterObj.finalTotal < 10) { //computer would knock at this point
       //dispatch event
       /*computerKnock = true;
       compPlayer.score = finalFilterObj.finalTotal;
