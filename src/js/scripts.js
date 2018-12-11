@@ -1,12 +1,11 @@
-import { rummy } from './rummy';
 import { oneTimeEvents } from './rummy/onetimeevents';
 import { player } from './rummy/player';
 import { joshua } from './rummy/joshua';
 import helpfulhints from './rummy/helpfulhints';
 console.log(helpfulhints);
-rummy.store.subscribe(arg => {
+//rummy.store.subscribe(arg => {
   //console.log(rummy.store.getState());
-});
+//});
 
 oneTimeEvents.createarrayofcards();
 oneTimeEvents.fillinmaincontent();

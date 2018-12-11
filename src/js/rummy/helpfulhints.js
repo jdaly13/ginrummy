@@ -24,7 +24,7 @@ helpfulhints.removeHint = function(whichHint) {
 
 helpfulhints.initiateSubscribe = function() {
   this.store.subscribe(() => {
-    console.log(this.store.getState().game.noOfCardsDiscarded);
+    //console.log(this.store.getState().game.noOfCardsDiscarded);
     if (this.store.getState().game.noOfCardsDiscarded === 1) {
       helpfulhints.removeHint();
     }

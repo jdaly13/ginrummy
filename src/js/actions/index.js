@@ -7,7 +7,7 @@ import {
   joshuaDiscard,
   playerKnock
 } from './game';
-import { updateScore, findFirstPlayerTotalValue, findJoshuaTotalValue } from './score';
+import { updateScore, findFirstPlayerTotalValue, findJoshuaTotalValue, storeFinalJoshuaObject, storeFinalFirstPlayerObject  } from './score';
 
 export {
   flipNewDeck,
@@ -19,5 +19,7 @@ export {
   joshuaDiscard,
   playerKnock,
   findFirstPlayerTotalValue,
-  findJoshuaTotalValue
+  findJoshuaTotalValue,
+  storeFinalJoshuaObject,
+  storeFinalFirstPlayerObject
 };

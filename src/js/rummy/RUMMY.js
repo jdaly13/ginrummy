@@ -1,5 +1,5 @@
 import configureStore from '../store';
-import { findFirstPlayerTotalValue, findJoshuaTotalValue } from '../actions';
+import { findFirstPlayerTotalValue, findJoshuaTotalValue, storeFinalJoshuaObject, storeFinalFirstPlayerObject } from '../actions';
 import {cloneObjectOfArrays} from '../utils';
 
 const store = configureStore();
@@ -8,18 +8,17 @@ RUMMY.prototype = {
   store,
   /***********
    second paramter ACTION
-    - dowetakediscardcard //Joshu decides which card top or discarded for next turn call func to see which card
     - falsy  //computer going through process to discard a particular card - may knock
-    - firstPlayer 
+    - dowetakediscardcard //Joshua decides which card top or discarded for next turn call func to see which card
+    - firstPlayerKnock 
         A.first player knocks check to see if legitmate knock by calling function to see if score is good 10 or below - set player.knocked to false
-    - computer 
-        B.if player knock is legitmate call func to check score of computer player
-    - findFirstPlayerScore
-        C. If computer player knocks call func to find first person score
+    - getJoshuaScore 
+        B.player has already knocked function is invoked to get Joshua score (start end of game)
+    - getFirstPlayerScore
+        C.computer has already knocked function is invoked to get First player score (start end of game)
   
    */
   decideWhichCard(cardElements, action = null) {
-    //console.log(cardElements);
     var array = [];
     Array.from(cardElements).forEach(ele => {
       array.push(ele.firstChild.getAttribute('class').split(' '));
@@ -31,7 +30,7 @@ RUMMY.prototype = {
     var sortedObj = this.sortObjOfArrays(obj);
     var sortedObjects = this.decideWhichOnesToKeep(sortedObj);
     var objectsGalore = this.findMatches(sortedObjects, action); //fix why we pass in action
-    let valueOfCard = false;
+    let valueOfCardAndObjectsGaloreNew = [];
     let frontSideOfCardToBeDiscarded = false; //DOM object
     let finalFilterObj = {};
     let whatCardToRidThisTime = null;
@@ -43,20 +42,32 @@ RUMMY.prototype = {
     total = this.checkScore(objectsGalore);
     console.log(total);
 
-    if (action === 'firstPlayerKnock') {
+    /*
+    player already initiated legitimate knock and we have saved first player score 
+    just tallied computer score and we can end game
+    */
+    if (action === 'getJoshuaScore') { //joshua's cards st
+      store.dispatch(findJoshuaTotalValue(total));
+      this.beginningOfTheEnd(action, objectsGalore)
+      return false;
+    }
+    //computer initiated legitimate knock and their score is already saved
+    // get first Person player score and end game
+    if (action === 'getFirstPlayerScore') { //first players cards
+      store.dispatch(findFirstPlayerTotalValue(total));
+      this.beginningOfTheEnd(action, objectsGalore);
+      return false;
+    }
+
+    if (action === 'firstPlayerKnock') {// player initiated knock still need computer score
       if (total <= 10) {
         store.dispatch(findFirstPlayerTotalValue(total));
-        return true
-      } else {
-        return false;
+        store.dispatch(storeFinalFirstPlayerObject(objectsGalore));
+        return 'legitimate'
+      } else { //player doesn't have enought to knock
+        return 'not-legitimate';
       }
-
     }
-
-    if (action === 'getJoshuaScore') { //player initiated knock
-      store.dispatch(findJoshuaTotalValue(total));
-    }
-
 
     whatCardToRidThisTime = this.shitPile(
       objectsGalore.possibleDiscard,
@@ -80,14 +91,21 @@ RUMMY.prototype = {
         ? finalFilterObj.whatCardToRidThisTime
         : null
     );
-
-    if (finalFilterObj.finalTotal < 10) { //computer would knock at this point
+    console.log(finalFilterObj.finalTotal);
+    if (finalFilterObj.finalTotal <= 10) { //joshua knocks at this point but we still need to first first player score
       //dispatch event
       /*computerKnock = true;
       compPlayer.score = finalFilterObj.finalTotal;
       compPlayer.deck = objectsGalore;
       */
+     store.dispatch(storeFinalJoshuaObject(objectsGalore));
+     store.dispatch(findJoshuaTotalValue(finalFilterObj.finalTotal));
+     return {
+      frontSideOfCardToBeDiscarded,
+      computerKnock: true
+     }
     }
+    //joshua discards
     return frontSideOfCardToBeDiscarded;
   },
   finalFilter(whatCardToRidThisTime, total, objectsGalore) {
@@ -123,7 +141,6 @@ RUMMY.prototype = {
   },
   furtherFilter(arr) {
     const obj = {};
-    console.log(arr);
     arr.forEach(value => {
       if (!obj[value[0]]) {
         obj[value[0]] = [];
@@ -804,6 +821,606 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
         .first()
         .addClass('discard');
     }*/
-  }
+  },
+
+  beginningOfTheEnd: function(playerOne, objectsGalore) {
+      var finalScore = 0,
+        firstplayerScore = this.store.getState().score.firstPlayerValue,
+        computerScore = this.store.getState().score.joshuaValue,
+        showCardObj = null,
+        deadWoodArray = [],
+        deadWoodMatch = null,
+        whatToMinusInARow = [],
+        whatToMinusMatch = [],
+        whatToMinus = 0;
+        console.log(playerOne, objectsGalore, firstplayerScore, computerScore );
+      if (playerOne === 'getFirstPlayerScore') {
+        //computer has knocked
+        //firstplayerScore = true;
+        finalScore = firstplayerScore - computerScore; 
+        if (computerScore === 0) finalScore = finalScore + 20; //if computer scores gin rummy perfect hand
+      } else { 
+        //first player knocked
+        //compPlayer.score = computerScore = total;
+        //finalScore = computerScore - player.firstPersonScore;
+        finalScore = computerScore - firstplayerScore;
+        if (firstplayerScore === 0) finalScore = finalScore + 20;
+      }
+      showCardObj = this.showYourCardsJoshua(
+        playerOne === 'getFirstPlayerScore' ? this.store.getState().score.joshuaFinalObj : objectsGalore
+      );
+      this.manipulateTheDom(showCardObj); // manipulate the DOM
+      deadWoodArray = this.laySomeDeadwood(
+        playerOne === 'getFirstPlayerScore' ? true : false,
+        objectsGalore
+      );
+      console.log(deadWoodArray);
+      deadWoodMatch = this.compareDeadwood(
+        deadWoodArray,
+        objectsGalore,
+        playerOne === 'getFirstPlayerScore' ? 'joshua' : false
+      );
+      console.log(deadWoodMatch);
+
+      if (deadWoodMatch) {
+        if (deadWoodMatch.inaRow.length) {
+          whatToMinusInARow = this.addOnYourDeadwoodToOpponet(
+            deadWoodMatch.inaRow,
+            'inarow',
+            playerOne
+          );
+        }
+        if (deadWoodMatch.match.length) {
+          whatToMinusMatch = this.addOnYourDeadwoodToOpponet(
+            deadWoodMatch.match,
+            'match',
+            playerOne
+          );
+        }
+        whatToMinus = this.loopThroughWhatToMinus(
+          whatToMinusInARow,
+          whatToMinusMatch
+        );
+        finalScore = finalScore < 0 ? 0 - whatToMinus : finalScore - whatToMinus;
+      }
+
+      if (finalScore > 0) {
+        this.makeLoveNotTupperWar(
+          finalScore,
+          playerOne,
+          playerOne === 'getFirstPlayerScore' ? false : true
+        );
+      } else {
+        this.makeLoveNotTupperWar(
+          Math.abs(finalScore) + 10,
+          playerOne,
+          fplayerOne === 'getFirstPlayerScore' ? true : false
+        );
+      }
+      return true;
+  },
+
+  showYourCardsJoshua: function(obj) {
+    console.log(obj);
+    // http://jsfiddle.net/fv6Ls7fg/1/ http://jsfiddle.net/fv6Ls7fg/2/
+    var stackCardsBeforeDeadwood = function() {
+      //var $compPlayer = compPlayer.$comp_player;
+      var compPlayer = this.DOMcomp_player;
+      var compPlayerLeft = parseInt(compPlayer.style.left);
+      var firstCardLeft = 51; //see dealcards first one will always be 51
+      var leftPosition = compPlayerLeft + firstCardLeft;
+      /*that.$comp_area //fix this statement
+        .children()
+        .removeAttr('style')
+        .end()
+        .parent()
+        .css({ marginLeft: leftPosition, top: '15px' });
+        */
+      var children = this.DOMcomp_playerArea.children;
+      Array.from(children).forEach((ele)=> {
+        ele.removeAttribute('style');
+      });
+      this.DOMcomp_player.style.left = leftPosition + 'px';
+      this.DOMcomp_player.style.top = "15px";
+    };
+
+
+    stackCardsBeforeDeadwood.call(this);
+    var prop;
+    var matchArray = [];
+    var keep = obj.keepTheseOnes;
+    var moreThanOneMatch = obj.moreThanOneMatch;
+    var object = {
+      clubs: [],
+      diamonds: [],
+      hearts: [],
+      spades: []
+    };
+
+    for (prop in keep) {
+      for (var i = 0; i < keep[prop].length; i++) {
+        object[prop][i] = '.' + prop + '.' + this.cardArray[keep[prop][i] - 1];
+      }
+    }
+
+    for (var j = 0; j < moreThanOneMatch.length; j++) {
+      matchArray.push('.' + this.cardArray[moreThanOneMatch[j] - 1]);
+    }
+
+    object.match = matchArray;
+    console.log(object);
+
+    return object;
+  },
+
+  manipulateTheDom: function(obj) {
+    console.log(obj);
+    var prop;
+    var match = obj.match;
+    var comp = this.DOMcomp_player;
+    var $newDom = null;
+    var pos = null;
+    var totalLength = 0;
+    var doSomeDomManipulation = function(css_class, deadWood) {
+      if (deadWood) {
+        //deadWood.children().appendTo($newDom);
+        Array.from(deadWood.children).forEach((ele)=>{
+          $newDom.appendChild(ele);
+        });
+
+        return true;
+      }
+      console.log(css_class);
+     /* $comp
+        .find(css_class)
+        .parent()
+        .not('.tagged')
+        .appendTo($newDom)
+        .end()
+        .addClass('tagged');
+        */ //fix
+        comp.querySelectorAll(css_class).forEach((ele) => {
+          var sectionParent = ele.parentElement;
+          if (!sectionParent.classList.contains('tagged')){
+            sectionParent.classList.add('tagged');
+            $newDom.appendChild(sectionParent);
+          }
+        });
+    };
+
+    var figureOutChildrenAndPlacement = function(len, $newDom) {
+      //len is not used
+      var compchildrenLength = comp.children.length;
+      var newDomChildrenLength = $newDom.children.length;
+      totalLength += newDomChildrenLength;
+      var width = newDomChildrenLength * 85;
+     // $newDom.css('width', width); //85 children width
+      $newDom.style.width = width + 'px';
+      if (compchildrenLength == 1) {
+        pos = parseInt(comp.style.left) - width;
+        $newDom.style.left = pos + 'px';
+        //$newDom.css('left', pos + 'px');
+      }
+
+      if (compchildrenLength == 2) {
+        var last = pos - parseInt($newDom.getBoundingClientRect().width) + 50;
+        //$newDom.css('left', last + 'px');
+        $newDom.style.left = last + 'px';
+      }
+
+      if (compchildrenLength == 3) {
+        if (totalLength === 10) {
+          //$newDom.css('left', '100px');
+          $newDom.style.left = '100px';
+        } else {
+          $newDom.style.left = '50px';
+          //$newDom.css('left', '50px');
+        }
+      }
+      //$newDom.appendTo(comp);
+      comp.appendChild($newDom);
+    };
+
+    var createSection = function(property) {
+     //return $("<section class=' " + classy + " '></section>");
+      var section = document.createElement('section');
+      section.classList.add(property, 'runs_wrapper');
+      return section;
+    };
+
+    var whatToDoWithTheRest = function(compArea) {
+      //var $children = $compArea.children();
+      //var compareaChildrenLength = $children.length;
+      var compareaChildrenLength = compArea.children.length;
+      //var mostLeft = parseInt($comp.children().last().css('left'));
+      $newDom = createSection('leftovers');
+      doSomeDomManipulation.call(this, '.wrapper', compArea);
+      //$newDom.css({ left: '-85px', width: compareaChildrenLength * 85 + 'px' });
+      $newDom.style.left = '-85px';
+      $newDom.style.width = compareaChildrenLength * 85 + 'px';
+      comp.appendChild($newDom);
+      //$newDom.appendTo(comp);
+     // $compArea.remove(); /* IMPORTANT */
+      compArea.parentElement.removeChild(compArea);
+    };
+    for (prop in obj) {
+      if (prop !== 'match' && obj[prop].length) {
+        $newDom = createSection(prop);
+        for (var i = 0; i < obj[prop].length; i++) {
+          doSomeDomManipulation.call(this, obj[prop][i]);
+        }
+        figureOutChildrenAndPlacement.call(this, obj[prop].length, $newDom);
+      }
+    }
+
+    for (var j = 0; j < match.length; j++) {
+      var property = 'match' + j;
+      $newDom = createSection(property);
+      doSomeDomManipulation.call(this, match[j]);
+      figureOutChildrenAndPlacement.call(this, null, $newDom);
+    }
+
+    //whatToDoWithTheRest(this.$comp_area);
+    whatToDoWithTheRest(this.DOMcomp_playerArea);
+    //what do we do with deadwood?
+  },
+
+  laySomeDeadwood: function(joshuKnocked, notKnocker) {
+    var area = null;
+    var deadWooodCardsArray = [];
+    var that = this;
+    var findOneMatch = function(whatToFind) {
+      for (var i = 0; i < whatToFind.length; i++) {
+        for (var j = 0; j < 2; j++) {
+          // 2 is a match
+          var numberToLetters = '.' + that.cardArray[whatToFind[i] - 1];
+          var watToPush = area.querySelectorAll(numberToLetters)[j].getAttribute('class').split(' ')[0] + whatToFind[i];
+          deadWooodCardsArray.push(watToPush);
+            /*area 
+              .find(numberToLetters)
+              .eq(j)
+              .attr('class')
+              .split(' ')[0] +
+              ' ' +
+              whatToFind[i] 
+              
+          ); */
+          //or at end + numberToLetters
+        }
+      }
+    };
+
+    var findMaybesOrPossibleDiscards = function(whatToFind) {
+      for (var prop in whatToFind)
+        for (var i = 0; i < whatToFind[prop].length; i++) {
+          deadWooodCardsArray.push(prop + ' ' + whatToFind[prop][i]);
+        }
+    };
+
+    var giveFirstPlayerHints = function(obj) {
+      var oneMatch = obj.oneMatch; //returns array [5]
+      var maybes = obj.maybes;
+      var possibleDiscard = obj.possibleDiscard;
+      findOneMatch(oneMatch);
+      findMaybesOrPossibleDiscards(maybes);
+      findMaybesOrPossibleDiscards(possibleDiscard);
+      return deadWooodCardsArray;
+    };
+
+    if (joshuKnocked) {
+      area = this.DOMplayerArea;
+    } else {
+      //$area = $('.leftovers');
+      area = document.querySelector('.leftovers'); // what if computer has rummy after you knocked - fat chance but it could happen!
+    }
+
+    return giveFirstPlayerHints(notKnocker);
+  },
+
+  compareDeadwood: function(deadwood, deck, joshua) {
+    var moreThanOneMatch = deck.moreThanOneMatch;
+    var inARow = deck.keepTheseOnes;
+    var deadlength = deadwood.length;
+    var matches = false;
+
+    // make utility function
+    var extractNumber = function(deadString) {
+      return parseInt(deadString.match(/\d+/));
+    };
+
+    // make utility function
+    var extractString = function(strWithNum) {
+      var strIndex = strWithNum.indexOf(' ');
+      return strWithNum.slice(0, strIndex);
+    };
+
+    var canWeAddToExistingMatch = function() {
+      var arr = [];
+      var compareIt = function(number) {
+        for (var j = 0; j < moreThanOneMatch.length; j++) {
+          if (number === moreThanOneMatch[j]) {
+            return moreThanOneMatch[j];
+          }
+        }
+        return false;
+      };
+      for (var i = 0; i < deadlength; i++) {
+        var it = extractNumber(deadwood[i]);
+        var existingMatch = compareIt(it);
+        if (existingMatch) {
+          arr.push(deadwood[i]);
+          deadwood[i] = '';
+        }
+      }
+
+      if (arr.length) {
+        return arr;
+      } else {
+        return false;
+      }
+    };
+
+    var canWeAddtoKeepTheseOnes = function() {
+      var arr = [];
+      var valueOrFalse = null;
+      var comparison = function(prop, numb) {
+        for (var j = 0; j < deadlength; j++) {
+          var sliceString = extractString(deadwood[j]);
+          var getNum = extractNumber(deadwood[j]);
+          if (sliceString == prop) {
+            if (getNum == numb - 1 || getNum == numb + 1) return deadwood[j];
+          }
+        }
+        return false;
+      };
+
+      for (var prop in inARow) {
+        for (var i = 0; i < inARow[prop].length; i++) {
+          valueOrFalse = comparison(prop, inARow[prop][i]);
+          if (!!valueOrFalse) arr.push(valueOrFalse);
+        }
+      }
+
+      if (arr.length) {
+        return arr;
+      } else {
+        return false;
+      }
+    };
+
+    var addToExistingMatch = canWeAddToExistingMatch();
+    var addOnToInARow = canWeAddtoKeepTheseOnes();
+    if ((addToExistingMatch && !!joshua) || (addOnToInARow && !!joshua)) {
+      matches = true;
+      //do some dom manipulation give user hin by animating card or something if they click then deduct points off score
+    }
+
+    if ((addToExistingMatch && !joshua) || (addOnToInARow && !joshua)) {
+      // player knocked first
+      matches = true;
+      console.log(addToExistingMatch); //fix this
+      // no hints needed just do some animation and have joshua slide his card over to main deck maybe
+    }
+
+    if (!!matches) {
+      return {
+        johsua: joshua,
+        match: addToExistingMatch || [],
+        inaRow: addOnToInARow || []
+      };
+    } else {
+      return matches; // false
+    }
+  },
+
+  addOnYourDeadwoodToOpponet: function(arr, str, player) {
+    var that = this;
+    var num = null;
+    var numArray = [];
+    var leftovers = document.querySelector('.leftovers');
+    var extractNumber = function(deadString) {
+      return parseInt(deadString.match(/\d+/));
+    };
+    var extractString = function(strWithNum) {
+      var strIndex = strWithNum.indexOf(' ');
+      return strWithNum.slice(0, strIndex);
+    };
+    if (str == 'match') {
+      arr.forEach(function(val) {
+        num = extractNumber(val);
+        var string = that.cardArray[num - 1];
+        if (player === 'getFirstPlayerScore') {
+          /*that.$area
+            .find('.' + string)
+            .parent()
+            .addClass('zooom'); */
+            that.DOMplayerArea.querySelector('.'+string).parentElement.classList.add('zoom');
+        } else {
+          /*$('section.leftovers')
+            .eq(0)
+            .find('.' + string)
+            .parent()
+            .addClass('zooom');
+            */
+           leftovers.querySelector('.'+string).parentElement.classList.add('zoom');
+        }
+        numArray.push(num);
+      });
+      return numArray;
+    } else {
+      arr.forEach(function(val) {
+        num = extractNumber(val);
+        var numString = '.' + that.cardArray[num - 1];
+        var suit = '.' + extractString(val);
+        var together = suit + numString;
+        if (player === 'getFirstPlayerScore') {
+          /*that.$area
+            .find(together)
+            .parent()
+            .addClass('zooom');
+            */
+           that.DOMplayerArea.querySelector(together).parentElement.classList.add('zoom');
+        } else {
+          /*$('section.leftovers')
+            .eq(0)
+            .find(together)
+            .parent()
+            .addClass('zooom');
+            */
+           leftovers.querySelector(together).parentElement.classList.add('zoom');
+        }
+
+        numArray.push(num);
+      });
+
+      return numArray;
+    }
+  },
+
+  makeLoveNotTupperWar: function(score, string, win) {
+    var obj = {};
+    obj.heading = win
+      ? 'Congratulations You Won this hand '
+      : 'Sorry you lost this hand';
+    obj.win = win ? 'You' : 'Joshua';
+    obj.text =
+      string === 'findFirstPlayerScore'
+        ? obj.win + ' scored ' + score + ' points'
+        : obj.win + ' scored ' + score + ' points';
+    obj.score = score;
+    obj.total = this.getExistingWinnerTotal(obj.win) + obj.score;
+    console.log('calledmakeloveNotupper');
+    this.overlay(obj);
+  },
+
+  getExistingWinnerTotal: function(winner) {
+    if (window.localStorage[winner]) {
+      var values = window.localStorage[winner].split(',');
+      var total = 0;
+      values.forEach(function(val) {
+        total += parseInt(val);
+      });
+      return total;
+    }
+    return 0;
+  },
+ /* overlay: function(howsitgonnabe) {
+    //fix this function
+    console.log('overlay called');
+    var $overlay = $('div.overlay'),
+      $closeBttn = $overlay.find('button.overlay-close'),
+      that = this,
+      game_over = document.getElementById('game_over'),
+      score = howsitgonnabe ? howsitgonnabe.score : null,
+      startNewGame = function() {
+        var $trigger = $('#trigger-overlay');
+        $trigger
+          .empty()
+          .addClass('newGAME bubble')
+          .text('Start New Match');
+        $trigger.on('click', function(e) {
+          e.preventDefault();
+          window.location.reload(); // FIX THIS
+        });
+      },
+      toggleOverlay = function(e) {
+        e ? (e.target ? e.preventDefault() : '') : '';
+        console.log(e);
+        if ($overlay.hasClass('open')) {
+          $overlay.removeClass('open');
+          $overlay.addClass('close');
+          var onEndTransitionFn = function() {
+            $overlay.removeClass('close');
+          };
+          $overlay.on(transitionEndEvent, onEndTransitionFn);
+          $(game_over).fadeOut();
+          $('#intro').remove();
+          console.log('open');
+        } else if (!$overlay.hasClass('close')) {
+          $overlay.addClass('open');
+          console.log('close');
+          if (e) {
+            if (e.heading && e.total < 100) {
+              $('#intro').hide();
+              $(game_over).fadeIn();
+              game_over.querySelector('h1').innerHTML = howsitgonnabe.heading;
+              game_over.querySelector('h2').innerHTML = howsitgonnabe.text;
+            }
+
+            if (e.heading && e.total >= 100) {
+              //END OF GAME NOT MATCH
+              $(game_over).fadeIn();
+              if (howsitgonnabe.win === 'You') {
+                game_over.querySelector('h1').innerHTML =
+                  "Congratualations You won the game but I'll get you next time, Gadget! NEXT time!";
+                game_over.querySelector('h2').innerHTML =
+                  'You scored a total of ' + howsitgonnabe.total + ' points';
+                that.congratulations(true);
+              } else {
+                //joshua won
+                game_over.querySelector('h1').innerHTML =
+                  "Joshua and O'Doyle Rules - GAME OVER!";
+                game_over.querySelector('h2').innerHTML =
+                  'Joshua scored a total of ' + howsitgonnabe.total + ' points';
+                that.congratulations();
+              }
+              return true;
+            }
+          }
+        } else {
+          $overlay.addClass('open');
+        }
+
+        if (e) {
+          if (e.data) {
+            if (e.data.score) {
+              //END OF Match
+              [].slice
+                .call(document.querySelectorAll('button'))
+                .forEach(function(obj) {
+                  if (obj.classList.contains('overlay-close')) {
+                    obj.disabled = false;
+                  } else {
+                    obj.disabled = true;
+                  }
+                });
+              rummy.$htmlDeck
+                .children(':last-child')
+                .find('div')
+                .children('a.take')
+                .hide();
+              that.updateScore(howsitgonnabe);
+              startNewGame();
+              //create new game
+            }
+          }
+        }
+      };
+
+    if (howsitgonnabe) {
+      var endOfGame = toggleOverlay(howsitgonnabe);
+      if (endOfGame) return true;
+    }
+
+    $closeBttn.off('click').on(
+      'click',
+      {
+        score: score
+      },
+      toggleOverlay
+    );
+
+    if (window.localStorage.getItem('modal') !== 'falsy') {
+      this.$intoIframe.insertBefore($(game_over));
+      toggleOverlay();
+      window.setTimeout(function() {
+        document.getElementById('shallWePlayAGame').play();
+      }, 2000);
+    }
+
+    window.localStorage.setItem('modal', 'falsy');
+    //window.localStorage.clear(); //for testing purposes
+  },
+  */
 };
 export default RUMMY;

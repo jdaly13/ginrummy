@@ -12,7 +12,10 @@ const initialState = {
 	current: 0,
 	all: [],
 	firstPlayerValue: 0,
-	joshuaValue:0
+	firstPlayerObj: {},
+	joshuaValue:0,
+	joshuaFinalObj: {}
+
 }
 
 export default function score (state = initialState, action) {
@@ -33,6 +36,14 @@ export default function score (state = initialState, action) {
 	case 'JOSHUA_FINAL_VALUE':
 		return Object.assign({}, state, {
 			joshuaValue: action.value
+		})
+	case 'STORE_FINAL_JOSHUA_OBJECT':
+		return Object.assign({}, state, {
+			joshuaFinalObj: action.value
+		})
+	case 'STORE_FINAL_FIRST_PLAYER_OBJECT':
+		return Object.assign({}, state, {
+			firstPlayerObj: action.value
 		})
 	default:
 		return state

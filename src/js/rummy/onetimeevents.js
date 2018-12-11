@@ -167,13 +167,13 @@ oneTimeEvents.makeDeckSortable = function() {
   rummy.sortable = Sortable.create(this.DOMplayerArea, {
     draggable: '.wrapper',
     onAdd: function(e) {
-      console.log('add', e);
+      //console.log('add', e);
     },
     onRemove: function(e) {
-      console.log('remove', e);
+      //console.log('remove', e);
     },
     onMove: function(e) {
-      console.log(e);
+      //console.log(e);
     }
   });
   rummy.DOMplayerArea = rummy.sortable.el;

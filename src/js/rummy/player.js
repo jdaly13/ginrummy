@@ -92,15 +92,15 @@ player.preDiscardCard = function(e) {
 
 player.discard = function(card) {
   this.DOMJunkPileContainer.append(card);
-  console.log(this.store.getState().game.playerKnock)
+  //console.log(this.store.getState().game.playerKnock)
   if(this.store.getState().game.playerKnock) { //see if player knocked
     const legitmateKnock = this.decideWhichCard(this.DOMplayer.querySelectorAll('.wrapper'), 'firstPlayerKnock');  // do they have enough to knock
-    if(!legitmateKnock) { //not enough to knock
+    if(legitmateKnock === 'legitimate') { //enough to knock
+      this.decideWhichCard(this.DOMcomp_playerArea.querySelectorAll('.wrapper'), 'getJoshuaScore'); //get computer score
+    } else if (legitmateKnock === 'legitimate') { //enough to knock 
       window.alert("you don't have enough to knock");
       this.store.dispatch(playerKnock()) //player knock if false now
       this.store.dispatch(playerDiscard());
-    } else { //enough to knock 
-      this.decideWhichCard(this.DOMcomp_playerArea.querySelectorAll('.wrapper'), 'getJoshuaScore'); //get computer score
     }
   } else {
     this.store.dispatch(playerDiscard());

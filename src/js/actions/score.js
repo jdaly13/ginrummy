@@ -18,3 +18,17 @@ export function findJoshuaTotalValue(value) {
 		value
 	}
 }
+
+export function storeFinalJoshuaObject(obj) {
+	return {
+		type: 'STORE_FINAL_JOSHUA_OBJECT',
+		value: obj
+	}
+}
+
+export function storeFinalFirstPlayerObject(obj) {
+	return {
+		type: 'STORE_FINAL_FIRST_PLAYER_OBJECT',
+		value: obj
+	}
+}
