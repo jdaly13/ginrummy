@@ -23,8 +23,8 @@ joshua.chooseWisely = function(discardcard) {
 joshua.takeCardProcess = function() {
   let cardToTakeObj;
   this.store.subscribe(() => {
-   // console.log(this.store.getState().game.playerDiscard);
-    if (this.store.getState().game.playerDiscard) {
+    console.log(this.store.getState().game.playerDiscard, 'playerDiscardState');
+    if (this.store.getState().game.playerDiscard) { // and game hasn'r ended FIX THIS
       window.setTimeout(() => {
         var doesJoshuatakeTopDiscardedcar = this.decideWhichCard(
           procureHand.call(this),
@@ -57,7 +57,7 @@ joshua.addCardToJoshuaHand = function(card, junkPile) {
       if (this.frontOfcardToDiscard.computerKnock) { // computer knocked
         this.frontOfcardToDiscard = this.frontOfcardToDiscard.frontSideOfCardToBeDiscarded;
         this.cardToDiscard = this.frontOfcardToDiscard.parentElement;
-        this.discardOfCard();
+        this.discardOfCard(true);
         this.decideWhichCard(this.DOMplayer.querySelectorAll('.wrapper'), 'getFirstPlayerScore'); //find first player Score
       } else {
         this.cardToDiscard = this.frontOfcardToDiscard.parentElement;
@@ -68,15 +68,15 @@ joshua.addCardToJoshuaHand = function(card, junkPile) {
   });
 };
 
-joshua.discardOfCard = function() {
+joshua.discardOfCard = function(endOfGame) {
   let anchor = this.frontOfcardToDiscard.querySelector('a');
   this.frontOfcardToDiscard.classList.add('taketopCard');
   anchor.textContent = 'TAKE';
   anchor.classList.add('take');
   this.DOMJunkPileContainer.append(this.cardToDiscard);
   this.cardToDiscard.classList.add('showdacard', 'flipchild');
-  //if joshua knocks don't do next two steps TO DO
-  this.store.dispatch(joshuaDiscard());
+  //if joshua knocks don't do next two steps TO DO FIX
+  this.store.dispatch(joshuaDiscard(endOfGame || false));
   this.togglebutton();
 };
 export { joshua };

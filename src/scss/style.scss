@@ -594,3 +594,147 @@ $elements: 11;
   height: 120px;
   float: left;
 }
+
+.overlay {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	background: rgba(228,43,43,0.9);
+        z-index: 1000;
+}
+
+/* Overlay closing cross */
+.overlay .overlay-close {
+	width: 80px;
+	height: 80px;
+	position: absolute;
+	right: 20px;
+	top: 20px;
+	overflow: hidden;
+	border: none;
+	background: url(../images/cross.png) no-repeat center center;
+	text-indent: 200%;
+	color: transparent;
+	outline: none;
+	z-index: 100;
+}
+
+.overlay-door {
+	visibility: hidden;
+	width: 0;
+	left: 50%;
+	-webkit-transform: translateX(-50%);
+	transform: translateX(-50%);
+	-webkit-transition: width 0.5s 0.3s, visibility 0s 0.8s;
+	transition: width 0.7s 0.3s, visibility 0s 0.9s;
+}
+
+.overlay-door.open {
+	visibility: visible;
+	width: 100%;
+	-webkit-transition: width 0.5s;
+	transition: width 0.5s;
+}
+
+
+.overlay-door nav,
+.overlay-door .overlay-close {
+	opacity: 0;
+	-webkit-transition: opacity 0.5s 0.5s;
+	transition: opacity 0.5s 0.5s;
+}
+
+.overlay-door.open nav,
+.overlay-door.open .overlay-close {
+	opacity: 1;
+	-webkit-transition-delay: 0.5s;
+	transition-delay: 0.5s;
+}
+
+.overlay-door.close nav,
+.overlay-door.close .overlay-close {
+	-webkit-transition-delay: 0s;
+	transition-delay: 0s;
+}
+
+#trigger-overlay {
+    display:block;
+    position:absolute;
+    bottom:2%;
+    right:2%;
+    text-decoration: none;
+    font-weight:bold;
+    color:#91B3C6;
+    font-size: 14px;
+    font-family: arial;
+    max-width:100px;   
+}
+
+#trigger-overlay.newGAME {
+    margin:20px;
+    max-width: 0;
+    padding:10px;
+    animation-name: color_change;
+    animation-duration: 5s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    max-width:100px;
+    font-size:16px;
+    color:#171515;
+    text-shadow: 0px -2px 2px rgba(250, 240, 240, 1);
+}
+
+.overlay h1 {
+    font-size:48px;
+    font-family: Garamond;
+    text-align:center;
+    color:white;
+    font-weight:bold;
+    margin-top:3%;
+    margin-bottom:15px;
+}
+
+.overlay section {
+    width:80%;
+    margin:0 auto;
+    color:white;
+    font-family:arial;
+    
+}
+
+#shallWePlayAGame {
+    width:200px;
+    margin:0 auto;
+    display:block;
+}
+
+.overlay section#intro p {
+    text-align:center;
+    font-size:16px;
+    line-height: 18px;
+    margin-bottom:8px;
+}
+
+.overlay section iframe {
+    width:100%;
+    height:600px;
+    border:none;
+    margin-top:20px;
+    border:20px solid white;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+.zooom {
+  -webkit-animation: zoom 3s ease-in-out 1s infinite normal;
+  animation: zoom 3s ease-in-out 1s infinite normal;
+  z-index: 999;
+}
+
+@keyframes zoom {
+  from {transform:scale(1.0)}
+  to {transform:scale(1.2)}
+}
+

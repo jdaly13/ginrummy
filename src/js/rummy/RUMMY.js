@@ -1,5 +1,5 @@
 import configureStore from '../store';
-import { findFirstPlayerTotalValue, findJoshuaTotalValue, storeFinalJoshuaObject, storeFinalFirstPlayerObject } from '../actions';
+import { findFirstPlayerTotalValue, findJoshuaTotalValue, storeFinalJoshuaObject, playerDiscard, storeFinalFirstPlayerObject } from '../actions';
 import {cloneObjectOfArrays} from '../utils';
 
 const store = configureStore();
@@ -35,7 +35,7 @@ RUMMY.prototype = {
     let finalFilterObj = {};
     let whatCardToRidThisTime = null;
     let total = 0;
- 
+    
     if (action === 'dowetakediscardcard') {
       return this.doWeTakeTopCard(this.DOMJunkPileContainer, objectsGalore);
     }
@@ -98,6 +98,7 @@ RUMMY.prototype = {
       compPlayer.score = finalFilterObj.finalTotal;
       compPlayer.deck = objectsGalore;
       */
+     store.dispatch(playerDiscard()); //does opposite setting it to false because it subscribes to store
      store.dispatch(storeFinalJoshuaObject(objectsGalore));
      store.dispatch(findJoshuaTotalValue(finalFilterObj.finalTotal));
      return {
@@ -849,15 +850,19 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
       showCardObj = this.showYourCardsJoshua(
         playerOne === 'getFirstPlayerScore' ? this.store.getState().score.joshuaFinalObj : objectsGalore
       );
-      this.manipulateTheDom(showCardObj); // manipulate the DOM
-      deadWoodArray = this.laySomeDeadwood(
+      this.manipulateTheDom(showCardObj); // manipulate the DOM to show Joshua's cards
+      
+      deadWoodArray = this.laySomeDeadwood( //objectsGalore is always person who didn't knock
         playerOne === 'getFirstPlayerScore' ? true : false,
         objectsGalore
       );
       console.log(deadWoodArray);
+      //take deadwood array and compare to player who knocked 
+      //eg if joshua/computer knocks then use their object if not 
+      //so opposite of objectsGalore
       deadWoodMatch = this.compareDeadwood(
         deadWoodArray,
-        objectsGalore,
+        playerOne === 'getFirstPlayerScore' ? this.store.getState().score.joshuaFinalObj : this.store.getState().score.firstPlayerObj,
         playerOne === 'getFirstPlayerScore' ? 'joshua' : false
       );
       console.log(deadWoodMatch);
@@ -894,7 +899,7 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
         this.makeLoveNotTupperWar(
           Math.abs(finalScore) + 10,
           playerOne,
-          fplayerOne === 'getFirstPlayerScore' ? true : false
+          playerOne === 'getFirstPlayerScore' ? true : false
         );
       }
       return true;
@@ -908,7 +913,7 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
       var compPlayer = this.DOMcomp_player;
       var compPlayerLeft = parseInt(compPlayer.style.left);
       var firstCardLeft = 51; //see dealcards first one will always be 51
-      var leftPosition = compPlayerLeft + firstCardLeft;
+      //var leftPosition = compPlayerLeft + firstCardLeft;
       /*that.$comp_area //fix this statement
         .children()
         .removeAttr('style')
@@ -920,7 +925,7 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
       Array.from(children).forEach((ele)=> {
         ele.removeAttribute('style');
       });
-      this.DOMcomp_player.style.left = leftPosition + 'px';
+      //this.DOMcomp_player.style.left = leftPosition + 'px';
       this.DOMcomp_player.style.top = "15px";
     };
 
@@ -961,6 +966,7 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
     var $newDom = null;
     var pos = null;
     var totalLength = 0;
+    var lastElementPos = this.DOMcomp_playerArea.lastElementChild.getBoundingClientRect().left;
     var doSomeDomManipulation = function(css_class, deadWood) {
       if (deadWood) {
         //deadWood.children().appendTo($newDom);
@@ -995,15 +1001,17 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
       totalLength += newDomChildrenLength;
       var width = newDomChildrenLength * 85;
      // $newDom.css('width', width); //85 children width
+     console.log(totalLength, lastElementPos )
       $newDom.style.width = width + 'px';
       if (compchildrenLength == 1) {
-        pos = parseInt(comp.style.left) - width;
+        pos = parseInt(lastElementPos) - width;
         $newDom.style.left = pos + 'px';
         //$newDom.css('left', pos + 'px');
       }
 
       if (compchildrenLength == 2) {
-        var last = pos - parseInt($newDom.getBoundingClientRect().width) + 50;
+        console.log(pos, $newDom.getBoundingClientRect().width )
+        var last = pos - (totalLength - 1) * 85;
         //$newDom.css('left', last + 'px');
         $newDom.style.left = last + 'px';
       }
@@ -1011,9 +1019,9 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
       if (compchildrenLength == 3) {
         if (totalLength === 10) {
           //$newDom.css('left', '100px');
-          $newDom.style.left = '100px';
+          $newDom.style.left = '0px'; //no deadwood 
         } else {
-          $newDom.style.left = '50px';
+          $newDom.style.left = '100px';
           //$newDom.css('left', '50px');
         }
       }
@@ -1031,12 +1039,13 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
     var whatToDoWithTheRest = function(compArea) {
       //var $children = $compArea.children();
       //var compareaChildrenLength = $children.length;
+      console.log('whattodowiththerestcalled')
       var compareaChildrenLength = compArea.children.length;
       //var mostLeft = parseInt($comp.children().last().css('left'));
       $newDom = createSection('leftovers');
       doSomeDomManipulation.call(this, '.wrapper', compArea);
       //$newDom.css({ left: '-85px', width: compareaChildrenLength * 85 + 'px' });
-      $newDom.style.left = '-85px';
+      $newDom.style.left = '0px';
       $newDom.style.width = compareaChildrenLength * 85 + 'px';
       comp.appendChild($newDom);
       //$newDom.appendTo(comp);
@@ -1234,7 +1243,7 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
             .find('.' + string)
             .parent()
             .addClass('zooom'); */
-            that.DOMplayerArea.querySelector('.'+string).parentElement.classList.add('zoom');
+            that.DOMplayerArea.querySelector('.'+string).parentElement.classList.add('zooom');
         } else {
           /*$('section.leftovers')
             .eq(0)
@@ -1242,7 +1251,7 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
             .parent()
             .addClass('zooom');
             */
-           leftovers.querySelector('.'+string).parentElement.classList.add('zoom');
+           leftovers.querySelector('.'+string).parentElement.classList.add('zooom');
         }
         numArray.push(num);
       });
@@ -1284,7 +1293,7 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
       : 'Sorry you lost this hand';
     obj.win = win ? 'You' : 'Joshua';
     obj.text =
-      string === 'findFirstPlayerScore'
+      string === 'getFirstPlayerScore'
         ? obj.win + ' scored ' + score + ' points'
         : obj.win + ' scored ' + score + ' points';
     obj.score = score;
@@ -1304,17 +1313,38 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
     }
     return 0;
   },
- /* overlay: function(howsitgonnabe) {
+
+  loopThroughWhatToMinus: function(arr1, arr2) {
+    var array = arr1.concat(arr2);
+    var numToReturn = 0;
+    array.forEach(function(val) {
+      var value = val > 10 ? 10 : val;
+      numToReturn += value;
+    });
+
+    return numToReturn;
+  },
+
+
+  overlay: function(howsitgonnabe) {
     //fix this function
-    console.log('overlay called');
-    var $overlay = $('div.overlay'),
-      $closeBttn = $overlay.find('button.overlay-close'),
+    console.log('overlay called', howsitgonnabe);
+    var overlay = document.querySelector('.overlay'),
+      closeBttn = overlay.querySelector('.overlay-close'),
       that = this,
       game_over = document.getElementById('game_over'),
       score = howsitgonnabe ? howsitgonnabe.score : null,
       startNewGame = function() {
-        var $trigger = $('#trigger-overlay');
-        $trigger
+        //var $trigger = $('#trigger-overlay');
+        var trigger = document.getElementById('trigger-overlay');
+        trigger.innerHTML = '';
+        trigger.classList.add('newGAME', 'bubble');
+        trigger.innerText = 'Start New Match';
+        trigger.addEventListener('click', (e) => {
+          e.preventDefault();
+          window.location.reload(); //FIX THIS
+        })
+        /*$trigger
           .empty()
           .addClass('newGAME bubble')
           .text('Start New Match');
@@ -1322,34 +1352,44 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
           e.preventDefault();
           window.location.reload(); // FIX THIS
         });
+        */
       },
       toggleOverlay = function(e) {
         e ? (e.target ? e.preventDefault() : '') : '';
         console.log(e);
-        if ($overlay.hasClass('open')) {
-          $overlay.removeClass('open');
-          $overlay.addClass('close');
+        if (overlay.classList.contains('open')) {
+        //if ($overlay.hasClass('open')) {
+          //$overlay.removeClass('open');
+          overlay.classList.remove('open');
+          //$overlay.addClass('close');
+          overlay.classList.add('close')
           var onEndTransitionFn = function() {
-            $overlay.removeClass('close');
+            overlay.classList.remove('close');
           };
-          $overlay.on(transitionEndEvent, onEndTransitionFn);
-          $(game_over).fadeOut();
-          $('#intro').remove();
+          //$overlay.on(transitionEndEvent, onEndTransitionFn);
+          overlay.addEventListener('transitionend', onEndTransitionFn);
+          //$(game_over).fadeOut();
+          document.getElementById('game_over').style.display = "none";
+          //$('#intro').remove();
           console.log('open');
-        } else if (!$overlay.hasClass('close')) {
-          $overlay.addClass('open');
+        } else if (!overlay.classList.contains('close')) {
+          //$overlay.addClass('open');
+          overlay.classList.add('open');
           console.log('close');
           if (e) {
             if (e.heading && e.total < 100) {
-              $('#intro').hide();
-              $(game_over).fadeIn();
+              //$('#intro').hide();
+             //$(game_over).fadeIn();
+              document.getElementById('game_over').style.display = "block"; //FIX THIS 
+              document.getElementById('intro').style.display = "none"
               game_over.querySelector('h1').innerHTML = howsitgonnabe.heading;
               game_over.querySelector('h2').innerHTML = howsitgonnabe.text;
             }
 
             if (e.heading && e.total >= 100) {
               //END OF GAME NOT MATCH
-              $(game_over).fadeIn();
+              //$(game_over).fadeIn();
+              document.getElementById('game_over').style.display = "block"; //FIX THIS 
               if (howsitgonnabe.win === 'You') {
                 game_over.querySelector('h1').innerHTML =
                   "Congratualations You won the game but I'll get you next time, Gadget! NEXT time!";
@@ -1368,12 +1408,12 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
             }
           }
         } else {
-          $overlay.addClass('open');
+          //$overlay.addClass('open');
+          overlay.classList.add('open');
         }
 
         if (e) {
-          if (e.data) {
-            if (e.data.score) {
+          if (e.data && e.data.score) {
               //END OF Match
               [].slice
                 .call(document.querySelectorAll('button'))
@@ -1384,15 +1424,16 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
                     obj.disabled = true;
                   }
                 });
-              rummy.$htmlDeck
+              /*rummy.$htmlDeck
                 .children(':last-child')
                 .find('div')
                 .children('a.take')
                 .hide();
-              that.updateScore(howsitgonnabe);
+                */
+              //that.DOMJunkPileContainer.lastElementChild.querySelector('.take').style.display = "none";
+              that.updateScore(howsitgonnabe); //FIX this
               startNewGame();
               //create new game
-            }
           }
         }
       };
@@ -1402,25 +1443,133 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
       if (endOfGame) return true;
     }
 
-    $closeBttn.off('click').on(
+    /*$closeBttn.off('click').on(
       'click',
       {
         score: score
       },
       toggleOverlay
     );
+    */
+   closeBttn.addEventListener('click', (e)=> {
+    e.data = {};
+    e.data.score = score;
+    toggleOverlay(e);
+   },
+   { once: true }
+  );
 
-    if (window.localStorage.getItem('modal') !== 'falsy') {
-      this.$intoIframe.insertBefore($(game_over));
-      toggleOverlay();
-      window.setTimeout(function() {
-        document.getElementById('shallWePlayAGame').play();
-      }, 2000);
-    }
+  if (window.localStorage.getItem('modal') !== 'falsy' && !howsitgonnabe) {
+    overlay.appendChild(this.DOMIntroNIframe);
+    this.DOMIntroNIframe.classList.remove('hide');
+    toggleOverlay();
+  }
 
     window.localStorage.setItem('modal', 'falsy');
-    //window.localStorage.clear(); //for testing purposes
+  //window.localStorage.clear(); //for testing purposes
   },
-  */
+
+  congratulations: function(player) {
+    if (player) {
+      //do some celebration animation
+    } else {
+      // do something else
+    }
+
+    window.localStorage.removeItem('You');
+    window.localStorage.removeItem('Joshua');
+  },
+
+  /* CALLLED ON PAGE OPEN TO DO FIX */
+  updateScore: function(obj) {
+    var whoWon = obj.win;
+    var whoLost = obj.win === 'You' ? 'Joshua' : 'You';
+    var you = document.getElementById('you');
+    var joshua = document.getElementById('joshua');
+    var yourChildren = you.querySelector('div').children;
+    var joshuaChildren = joshua.querySelector('div').children;
+    var span = document.createElement('span');
+    var winnerObj = {};
+    var loserObj = {};
+    var overHundred = false;
+    console.log(obj);
+
+    var updateSpan = function() {
+      span.innerHTML = obj.score;
+    };
+
+    var loopThroughSpans = function(spans) {
+      var arr = [];
+      var total = 0;
+      for (var i = 0; i < spans.length; i++) {
+        var num = parseInt(spans[i].textContent);
+        arr.push(num);
+        total += num;
+      }
+      overHundred = total >= 100 ? true : false;
+      return {
+        arr: arr,
+        total: total,
+        overOneHundred: overHundred
+      };
+    };
+    if (whoWon === 'You') {
+      // refactor this
+      updateSpan();
+      you.querySelector('div').appendChild(span);
+      winnerObj = loopThroughSpans(yourChildren);
+      loserObj = loopThroughSpans(joshuaChildren);
+      you.querySelector('h6').innerHTML = winnerObj.total;
+    } else {
+      //duh computer
+      updateSpan();
+      joshua.querySelector('div').appendChild(span);
+      winnerObj = loopThroughSpans(joshuaChildren);
+      loserObj = loopThroughSpans(yourChildren);
+      joshua.querySelector('h6').innerHTML = winnerObj.total;
+    }
+
+    if (winnerObj.overOneHundred) {
+      /*$('#score')
+        .nextUntil('div.overlay')
+        .remove();*/
+        this.DOMcomp_player.parentElement.removeChild(this.DOMcomp_player);
+        this.DOMplayer.parentElement.removeChild(this.DOMplayer);
+        document.getElementById('main_content').parentElement.removeChild(document.getElementById('main_content'));
+    }
+
+    window.localStorage.setItem(whoWon, winnerObj.arr);
+    window.localStorage.setItem(whoLost, loserObj.arr);
+    document.getElementById('score').style.display = 'block';
+  },
+
+  checkLocalStorage: function() {
+    var createSpans = function(arr, id) {
+      var total = 0;
+      arr.forEach(function(val, i, array) {
+        var span = document.createElement('span');
+        span.innerHTML = val;
+        id.querySelector('div').appendChild(span);
+        total += parseInt(val);
+      });
+      id.querySelector('h6').innerHTML = total;
+    };
+    if (
+      window.localStorage.getItem('You') ||
+      window.localStorage.getItem('Joshua')
+    ) {
+      document.getElementById('score').style.display = 'block';
+      if (window.localStorage.getItem('You')) {
+        var you = window.localStorage.getItem('You').split(',');
+        createSpans(you, document.getElementById('you'));
+        //loop through  you and crate spans for each one append to you div
+      }
+      if (window.localStorage.getItem('Joshua')) {
+        var joshua = window.localStorage.getItem('Joshua').split(',');
+        createSpans(joshua, document.getElementById('joshua'));
+      }
+    }
+  },
+  
 };
 export default RUMMY;

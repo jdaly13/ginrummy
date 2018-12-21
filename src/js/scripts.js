@@ -14,3 +14,5 @@ oneTimeEvents.userEvents();
 player.userEvents();
 joshua.takeCardProcess();
 helpfulhints.initiateSubscribe();
+oneTimeEvents.overlay();
+oneTimeEvents.checkLocalStorage();

@@ -17,6 +17,7 @@ export const rummy = Object.assign(RUMMY.prototype, {
   DOMcomp_playerArea: document.getElementById('comp_area'),
   DOMdeck: document.getElementById('deck'),
   DOMJunkPileContainer: document.getElementById('junkpileArea'),
+  DOMIntroNIframe: document.getElementById('intro'),
   //buttons
   DOMdealCardsButton: document.getElementById('deal'),
   DOMtakeCardButton: document.getElementById('takeCard'),

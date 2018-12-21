@@ -38,9 +38,11 @@ export default function game(state = initialState, action) {
         noOfCardsDiscarded: ++state.noOfCardsDiscarded
       });
     case 'JOSHUA_DISCARD_CARD':
+      //if action.value it's end of game so we don't toggle playerDiscardState
+      console.log('jsohuadiscardcard');
       return Object.assign({}, state, {
         joshuaDiscard: !state.joshuaDiscard,
-        playerDiscard: !state.playerDiscard,
+        playerDiscard: action.value === "endOfGame" ? false : !state.playerDiscard,
         noOfCardsDiscarded: ++state.noOfCardsDiscarded
       });
     case 'PLAYER_KNOCK': 

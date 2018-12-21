@@ -32,9 +32,10 @@ export function playerDiscard() {
   };
 }
 
-export function joshuaDiscard() {
+export function joshuaDiscard(endOfGame) {
   return {
-    type: 'JOSHUA_DISCARD_CARD'
+    type: 'JOSHUA_DISCARD_CARD',
+    value: endOfGame ? 'endOfGame' : false
   };
 }
 
