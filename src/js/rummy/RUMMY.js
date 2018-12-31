@@ -6,7 +6,8 @@ const store = configureStore();
 function RUMMY() {}
 RUMMY.prototype = {
   store,
-  /***********
+  /*
+   #######################
    second paramter ACTION
     - falsy  //computer going through process to discard a particular card - may knock
     - dowetakediscardcard //Joshua decides which card top or discarded for next turn call func to see which card
@@ -16,7 +17,7 @@ RUMMY.prototype = {
         B.player has already knocked function is invoked to get Joshua score (start end of game)
     - getFirstPlayerScore
         C.computer has already knocked function is invoked to get First player score (start end of game)
-  
+    ######################
    */
   decideWhichCard(cardElements, action = null) {
     var array = [];
@@ -68,12 +69,15 @@ RUMMY.prototype = {
         return 'not-legitimate';
       }
     }
+    console.log(objectsGalore);
 
     whatCardToRidThisTime = this.shitPile(
       objectsGalore.possibleDiscard,
       objectsGalore.maybes,
       objectsGalore.oneMatch
     );
+
+    console.log(whatCardToRidThisTime);
     //return array first spot is either false or an array itself [[], newClonedObj]
     valueOfCardAndObjectsGaloreNew = this.checkTheValueof(whatCardToRidThisTime, objectsGalore);
 
@@ -242,7 +246,7 @@ RUMMY.prototype = {
   findMatches: function(objOfObjects, playa) {
     //SOLUTION http://jsfiddle.net/25nh54dp/34/ // http://jsfiddle.net/25nh54dp/37/ line ~516 -- FIX THIS http://jsfiddle.net/25nh54dp/38/(screenshot)
     //http://jsfiddle.net/25nh54dp/40/
-const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
+    const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
     var properties = this.cardSuits;
     var testArray = [];
     var keepArray = [];
@@ -1335,7 +1339,6 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
       game_over = document.getElementById('game_over'),
       score = howsitgonnabe ? howsitgonnabe.score : null,
       startNewGame = function() {
-        //var $trigger = $('#trigger-overlay');
         var trigger = document.getElementById('trigger-overlay');
         trigger.innerHTML = '';
         trigger.classList.add('newGAME', 'bubble');
@@ -1343,16 +1346,7 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
         trigger.addEventListener('click', (e) => {
           e.preventDefault();
           window.location.reload(); //FIX THIS
-        })
-        /*$trigger
-          .empty()
-          .addClass('newGAME bubble')
-          .text('Start New Match');
-        $trigger.on('click', function(e) {
-          e.preventDefault();
-          window.location.reload(); // FIX THIS
         });
-        */
       },
       toggleOverlay = function(e) {
         e ? (e.target ? e.preventDefault() : '') : '';
@@ -1362,19 +1356,23 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
           //$overlay.removeClass('open');
           overlay.classList.remove('open');
           //$overlay.addClass('close');
-          overlay.classList.add('close')
+          overlay.classList.add('close');
           var onEndTransitionFn = function() {
+            console.log('triggered')
             overlay.classList.remove('close');
           };
-          //$overlay.on(transitionEndEvent, onEndTransitionFn);
-          overlay.addEventListener('transitionend', onEndTransitionFn);
+          overlay.addEventListener('transitionend', onEndTransitionFn, {
+            once: true
+          });
           //$(game_over).fadeOut();
           document.getElementById('game_over').style.display = "none";
           //$('#intro').remove();
           console.log('open');
+          closeBttn.removeEventListener('click', middleman, false);
         } else if (!overlay.classList.contains('close')) {
           //$overlay.addClass('open');
           overlay.classList.add('open');
+          closeBttn.addEventListener('click', middleman, false);
           console.log('close');
           if (e) {
             if (e.heading && e.total < 100) {
@@ -1408,7 +1406,6 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
             }
           }
         } else {
-          //$overlay.addClass('open');
           overlay.classList.add('open');
         }
 
@@ -1432,10 +1429,18 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
                 */
               //that.DOMJunkPileContainer.lastElementChild.querySelector('.take').style.display = "none";
               that.updateScore(howsitgonnabe); //FIX this
+              console.log('start new game called')
               startNewGame();
               //create new game
           }
         }
+
+      },
+      middleman = function (e) {
+        console.log('calllled')
+        e.data = {};
+        e.data.score = score;
+        toggleOverlay(e);
       };
 
     if (howsitgonnabe) {
@@ -1443,35 +1448,22 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
       if (endOfGame) return true;
     }
 
-    /*$closeBttn.off('click').on(
-      'click',
-      {
-        score: score
-      },
-      toggleOverlay
-    );
-    */
-   closeBttn.addEventListener('click', (e)=> {
-    e.data = {};
-    e.data.score = score;
-    toggleOverlay(e);
-   },
-   { once: true }
-  );
 
-  if (window.localStorage.getItem('modal') !== 'falsy' && !howsitgonnabe) {
-    overlay.appendChild(this.DOMIntroNIframe);
-    this.DOMIntroNIframe.classList.remove('hide');
-    toggleOverlay();
-  }
+
+    if (window.localStorage.getItem('modal') !== 'falsy' && !howsitgonnabe) {
+      overlay.appendChild(this.DOMIntroNIframe);
+      this.DOMIntroNIframe.classList.remove('hide');
+      toggleOverlay();
+    }
 
     window.localStorage.setItem('modal', 'falsy');
   //window.localStorage.clear(); //for testing purposes
   },
 
   congratulations: function(player) {
+    console.log('player', player);
     if (player) {
-      //do some celebration animation
+      //do some celebration animation TODO
     } else {
       // do something else
     }
@@ -1569,7 +1561,7 @@ const clonedObjectofObjects = cloneObjectOfArrays(objOfObjects);
         createSpans(joshua, document.getElementById('joshua'));
       }
     }
-  },
+  }
   
 };
 export default RUMMY;

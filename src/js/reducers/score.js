@@ -19,7 +19,6 @@ const initialState = {
 }
 
 export default function score (state = initialState, action) {
-	console.log(state, action);
 	switch (action.type) {
 	case 'UPDATE_CURRENT_SCORE':
 		return Object.assign({}, state, {

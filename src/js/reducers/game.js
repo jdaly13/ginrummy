@@ -13,7 +13,6 @@ const initialState = {
 let index = 0;
 
 export default function game(state = initialState, action) {
-  console.log(state, action);
   switch (action.type) {
     case 'CARDS_DELT':
       return Object.assign({}, state, {
@@ -39,7 +38,6 @@ export default function game(state = initialState, action) {
       });
     case 'JOSHUA_DISCARD_CARD':
       //if action.value it's end of game so we don't toggle playerDiscardState
-      console.log('jsohuadiscardcard');
       return Object.assign({}, state, {
         joshuaDiscard: !state.joshuaDiscard,
         playerDiscard: action.value === "endOfGame" ? false : !state.playerDiscard,

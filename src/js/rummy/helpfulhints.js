@@ -15,17 +15,28 @@ helpfulhints.showHint = function(whichHint) {
   if (whichHint === 2) {
     this.DOMbubble.setAttribute('data-bubble', 'third');
     this.DOMbubble.innerHTML = thirdBubbleHint;
+    this.DOMbubble.classList.remove('hide');
+    window.setTimeout(() => {
+      this.DOMbubble.classList.add('animated');
+    }, 0);
   }
 };
 
 helpfulhints.removeHint = function(whichHint) {
   this.DOMbubble.classList.add('hide');
+  this.DOMbubble.classList.remove('animated');
 };
 
 helpfulhints.initiateSubscribe = function() {
   this.store.subscribe(() => {
     //console.log(this.store.getState().game.noOfCardsDiscarded);
     if (this.store.getState().game.noOfCardsDiscarded === 1) {
+      helpfulhints.removeHint();
+    }
+    if (this.store.getState().game.noOfCardsDiscarded === 2) {
+      helpfulhints.showHint(2);
+    }
+    if (this.store.getState().game.noOfCardsDiscarded === 3) {
       helpfulhints.removeHint();
     }
   });

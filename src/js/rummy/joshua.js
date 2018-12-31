@@ -23,7 +23,7 @@ joshua.chooseWisely = function(discardcard) {
 joshua.takeCardProcess = function() {
   let cardToTakeObj;
   this.store.subscribe(() => {
-    console.log(this.store.getState().game.playerDiscard, 'playerDiscardState');
+    //console.log(this.store.getState().game.playerDiscard, 'playerDiscardState');
     if (this.store.getState().game.playerDiscard) { // and game hasn'r ended FIX THIS
       window.setTimeout(() => {
         var doesJoshuatakeTopDiscardedcar = this.decideWhichCard(
@@ -38,7 +38,6 @@ joshua.takeCardProcess = function() {
 };
 
 joshua.addCardToJoshuaHand = function(card, junkPile) {
-  let whatCard;
   let i = false;
   //console.log(card, this.DOMcomp_playerArea);
   let position = getOffset(card).left - getOffset(this.DOMcomp_playerArea).left;

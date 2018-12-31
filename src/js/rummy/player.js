@@ -97,7 +97,7 @@ player.discard = function(card) {
     const legitmateKnock = this.decideWhichCard(this.DOMplayer.querySelectorAll('.wrapper'), 'firstPlayerKnock');  // do they have enough to knock
     if(legitmateKnock === 'legitimate') { //enough to knock
       this.decideWhichCard(this.DOMcomp_playerArea.querySelectorAll('.wrapper'), 'getJoshuaScore'); //get computer score
-    } else if (legitmateKnock === 'legitimate') { //enough to knock 
+    } else if (legitmateKnock === 'not-legitimate') { //enough to knock 
       window.alert("you don't have enough to knock");
       this.store.dispatch(playerKnock()) //player knock if false now
       this.store.dispatch(playerDiscard());
