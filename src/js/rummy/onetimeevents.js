@@ -77,6 +77,8 @@ oneTimeEvents.loopthroughdiv = function() {
   );
 };
 
+
+
 oneTimeEvents.dealcards = function(e) {
   var k = 50;
   var i = 51;
