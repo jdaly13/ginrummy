@@ -77,6 +77,8 @@ oneTimeEvents.loopthroughdiv = function() {
   );
 };
 
+
+
 oneTimeEvents.dealcards = function(e) {
   var k = 50;
   var i = 51;
@@ -142,20 +144,19 @@ oneTimeEvents.flipNewDeck = function() {
   Array.from(first_player).forEach((ele, index) => {
     ele.style.zIndex = zIndex - index;
     ele.classList.add('flipchild');
-    ele.addEventListener(
+    first_player[9].addEventListener(
       'transitionend',
       e => {
         ele.removeAttribute('style');
         this.DOMplayer.style.top = fp_top + 'px';
-        this.DOMplayerArea.append(ele);
-        if (index === 0) {
-          this.store.dispatch(flipNewDeck('flippedDeck'));
-          this.makeDeckSortable();
-        }
+        this.DOMplayerArea.prepend(ele);
+        this.store.dispatch(flipNewDeck('flippedDeck'));
+        this.makeDeckSortable();
       },
       { once: true }
     );
-  });
+    
+  }); 
 
   Array.from(comp_player).forEach((ele, i) => {
     ele.removeAttribute('style');

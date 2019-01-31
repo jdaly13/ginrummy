@@ -1,5 +1,3 @@
-import { stat } from "fs";
-
 /*import {
 	SCORE_CURRENT_UPDATE,
 	SCORE_CURRENT_CLEAR,
