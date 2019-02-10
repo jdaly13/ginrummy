@@ -321,7 +321,8 @@ RUMMY.prototype = {
 
       if (compchildrenLength == 2) {
         console.log(pos, $newDom.getBoundingClientRect().width )
-        var last = pos - (totalLength - 1) * 85;
+        //var last = pos - (totalLength - 1) * 85;
+        var last = pos - (5 * 85);//temp fix hardcoding 5
         //$newDom.css('left', last + 'px');
         $newDom.style.left = last + 'px';
       }
@@ -568,7 +569,7 @@ RUMMY.prototype = {
             .parent()
             .addClass('zooom');
             */
-           that.DOMplayerArea.querySelector(together).parentElement.classList.add('zoom');
+           that.DOMplayerArea.querySelector(together).parentElement.classList.add('zooom');
         } else {
           /*$('section.leftovers')
             .eq(0)
@@ -576,7 +577,7 @@ RUMMY.prototype = {
             .parent()
             .addClass('zooom');
             */
-           leftovers.querySelector(together).parentElement.classList.add('zoom');
+           leftovers.querySelector(together).parentElement.classList.add('zooom');
         }
 
         numArray.push(num);

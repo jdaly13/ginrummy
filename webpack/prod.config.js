@@ -3,6 +3,7 @@ const extractPlugin = require('extract-text-webpack-plugin');
 const merge = require('webpack-merge');
 const baseConfig = require('./base.config.js');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 const extractSass = new extractPlugin({filename: "[name].bundle.css"})
 
@@ -83,6 +84,8 @@ module.exports = merge(baseConfig, {
       filename: "./index.html",
       title: "",
       hash: true
-    })
+    }),
+    new CleanWebpackPlugin([path.resolve(process.cwd(), "./live")], { allowExternal: true })
+
   ],
 });

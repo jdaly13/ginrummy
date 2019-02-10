@@ -737,7 +737,7 @@ $elements: 11;
 .zooom {
   -webkit-animation: zoom 3s ease-in-out 1s infinite normal;
   animation: zoom 3s ease-in-out 1s infinite normal;
-  z-index: 999;
+  z-index: 999 !important;
 }
 
 @keyframes zoom {

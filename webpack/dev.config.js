@@ -16,7 +16,7 @@ module.exports = merge(baseConfig, {
     poll: true
   },
   devServer: {
-    contentBase: path.join(__dirname, 'dist'),
+    contentBase: path.join(__dirname, 'live'),
     port:9000,
     hot:true
   },
@@ -49,7 +49,7 @@ module.exports = merge(baseConfig, {
   },
   mode: "development",
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'live'),
     filename: '[name].bundle.js'
   }
 });

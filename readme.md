@@ -27,3 +27,5 @@ gulp start
 should open up browser tab - hit refresh if you don't see cards
 
 on plyer events last leftoff on player.js flipcards need to implement take card then discard card as well then to algorithms
+
+https://twitter.com/jamiebuilds/status/1022568918949408768 webpack configuration babel
