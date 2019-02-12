@@ -1,6 +1,6 @@
 # Gin Rummy
 
-version 0.4
+version 2.0
 Fully functioning game to 100 points
 
 full verision http://ginrummy.surge.sh using old JQUERY
@@ -11,21 +11,16 @@ additions to be added in future versions
 *off screen menu for functionality
 *better algorithm
 
-Currently in process of doing version 2.0 where no jQuery is needed and using Redux to manage state and a build process that utilizes
-Ecmascript 6 and making it more modular
-
-clone repo and run grunt start to create a local server
-currently create deck of cards, shuffle and deal them
+###Requiremets
+Node
 
 ###USE LOCALLY NEW VERSION in Developement
 
 ```
-npm install gulp
 npm install
-gulp start
+npm run dev //development environment
+npm run build // final build into live directory all front end code
 ```
 should open up browser tab - hit refresh if you don't see cards
-
-on plyer events last leftoff on player.js flipcards need to implement take card then discard card as well then to algorithms
 
 https://twitter.com/jamiebuilds/status/1022568918949408768 webpack configuration babel
