@@ -1,6 +1,6 @@
 {
   "name": "ginrummyredux",
-  "version": "0.0.1",
+  "version": "2.0.0",
   "description": "Gin Rummy Game",
   "main": "index.js",
   "scripts": {

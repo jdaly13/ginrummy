@@ -1,11 +1,8 @@
 # Gin Rummy
 
-version 1.0  
+version 2.0  
 Full functioning Game against computer/Joshua upto 100  
 Rebuilt using vanilla javascript, Redux, and ES6 modules  
-
-### Prerequisites
-NODE
 
 full verision http://ginrummy.surge.sh using old JQUERY
 
@@ -15,11 +12,10 @@ additions to be added in future versions
 *off screen menu for functionality
 *more in depth algorithms for computer play
 
-###Requiremets
-Node
+### Requiremets  
+NODE
 
-###USE LOCALLY NEW VERSION in Developement
-
+### Development
 ```
 npm install
 npm run dev //development environment
