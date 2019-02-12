@@ -1,7 +1,11 @@
 # Gin Rummy
 
-version 2.0
-Fully functioning game to 100 points
+version 1.0  
+Full functioning Game against computer/Joshua upto 100  
+Rebuilt using vanilla javascript, Redux, and ES6 modules  
+
+### Prerequisites
+NODE
 
 full verision http://ginrummy.surge.sh using old JQUERY
 
@@ -9,7 +13,7 @@ additions to be added in future versions
 *start new game
 *congratulations screen
 *off screen menu for functionality
-*better algorithm
+*more in depth algorithms for computer play
 
 ###Requiremets
 Node
