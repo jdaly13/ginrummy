@@ -540,18 +540,8 @@ RUMMY.prototype = {
         num = extractNumber(val);
         var string = that.cardArray[num - 1];
         if (player === 'getFirstPlayerScore') {
-          /*that.$area
-            .find('.' + string)
-            .parent()
-            .addClass('zooom'); */
             that.DOMplayerArea.querySelector('.'+string).parentElement.classList.add('zooom');
         } else {
-          /*$('section.leftovers')
-            .eq(0)
-            .find('.' + string)
-            .parent()
-            .addClass('zooom');
-            */
            leftovers.querySelector('.'+string).parentElement.classList.add('zooom');
         }
         numArray.push(num);
@@ -628,13 +618,12 @@ RUMMY.prototype = {
 
 
   overlay: function(howsitgonnabe) {
-    //fix this function
-    console.log('overlay called', howsitgonnabe);
     var overlay = document.querySelector('.overlay'),
       closeBttn = overlay.querySelector('.overlay-close'),
       that = this,
       game_over = document.getElementById('game_over'),
       score = howsitgonnabe ? howsitgonnabe.score : null,
+      endOfMatch = false,
       startNewGame = function() {
         var trigger = document.getElementById('trigger-overlay');
         trigger.innerHTML = '';
@@ -645,46 +634,33 @@ RUMMY.prototype = {
           window.location.reload(); //FIX THIS
         });
       },
-      toggleOverlay = function(e) {
-        e ? (e.target ? e.preventDefault() : '') : '';
-        console.log(e);
+      toggleOverlay = function(e={}) {
+        if (e.target) { e.preventDefault()}
+
         if (overlay.classList.contains('open')) {
-        //if ($overlay.hasClass('open')) {
-          //$overlay.removeClass('open');
           overlay.classList.remove('open');
-          //$overlay.addClass('close');
           overlay.classList.add('close');
           var onEndTransitionFn = function() {
-            console.log('triggered')
             overlay.classList.remove('close');
           };
           overlay.addEventListener('transitionend', onEndTransitionFn, {
             once: true
           });
-          //$(game_over).fadeOut();
-          document.getElementById('game_over').style.display = "none";
-          //$('#intro').remove();
-          console.log('open');
+          game_over.style.display = "none";
           closeBttn.removeEventListener('click', middleman, false);
         } else if (!overlay.classList.contains('close')) {
-          //$overlay.addClass('open');
           overlay.classList.add('open');
           closeBttn.addEventListener('click', middleman, false);
-          console.log('close');
-          if (e) {
             if (e.heading && e.total < 100) {
-              //$('#intro').hide();
-             //$(game_over).fadeIn();
-              document.getElementById('game_over').style.display = "block"; //FIX THIS 
+              game_over.style.display = "block"; //FIX THIS 
               document.getElementById('intro').style.display = "none"
               game_over.querySelector('h1').innerHTML = howsitgonnabe.heading;
               game_over.querySelector('h2').innerHTML = howsitgonnabe.text;
             }
 
             if (e.heading && e.total >= 100) {
-              //END OF GAME NOT MATCH
-              //$(game_over).fadeIn();
-              document.getElementById('game_over').style.display = "block"; //FIX THIS 
+              endOfMatch = true;
+              game_over.style.display = "block"; //FIX THIS 
               if (howsitgonnabe.win === 'You') {
                 game_over.querySelector('h1').innerHTML =
                   "Congratualations You won the game but I'll get you next time, Gadget! NEXT time!";
@@ -694,49 +670,36 @@ RUMMY.prototype = {
               } else {
                 //joshua won
                 game_over.querySelector('h1').innerHTML =
-                  "Joshua and O'Doyle Rules - GAME OVER!";
+                  "Joshua and O'Doyle Rules!!! - GAME OVER!";
                 game_over.querySelector('h2').innerHTML =
                   'Joshua scored a total of ' + howsitgonnabe.total + ' points';
                 that.congratulations();
               }
               return true;
             }
-          }
         } else {
           overlay.classList.add('open');
         }
 
-        if (e) {
-          if (e.data && e.data.score) {
-              //END OF Match
-              [].slice
-                .call(document.querySelectorAll('button'))
-                .forEach(function(obj) {
-                  if (obj.classList.contains('overlay-close')) {
-                    obj.disabled = false;
-                  } else {
-                    obj.disabled = true;
-                  }
-                });
-              /*rummy.$htmlDeck
-                .children(':last-child')
-                .find('div')
-                .children('a.take')
-                .hide();
-                */
-              //that.DOMJunkPileContainer.lastElementChild.querySelector('.take').style.display = "none";
-              that.updateScore(howsitgonnabe); //FIX this
-              console.log('start new game called')
-              startNewGame();
-              //create new game
-          }
+        if (e.data && e.data.score) {
+            //END OF Match
+            [].slice
+              .call(document.querySelectorAll('button'))
+              .forEach(function(obj) {
+                if (obj.classList.contains('overlay-close')) {
+                  obj.disabled = false;
+                } else {
+                  obj.disabled = true;
+                }
+              });
+            that.updateScore(howsitgonnabe); //FIX this
+            startNewGame();
         }
 
       },
       middleman = function (e) {
-        console.log('calllled')
         e.data = {};
-        e.data.score = score;
+        e.data.score = endOfMatch ? false : score;
         toggleOverlay(e);
       };
 
@@ -745,16 +708,12 @@ RUMMY.prototype = {
       if (endOfGame) return true;
     }
 
-
-
     if (window.localStorage.getItem('modal') !== 'falsy' && !howsitgonnabe) {
       overlay.appendChild(this.DOMIntroNIframe);
       this.DOMIntroNIframe.classList.remove('hide');
       toggleOverlay();
+      window.localStorage.setItem('modal', 'falsy');
     }
-
-    window.localStorage.setItem('modal', 'falsy');
-  //window.localStorage.clear(); //for testing purposes
   },
 
   congratulations: function(player) {
@@ -842,6 +801,9 @@ RUMMY.prototype = {
         total += parseInt(val);
       });
       id.querySelector('h6').innerHTML = total;
+      if (total >= 100) {
+        window.localStorage.clear();
+      }
     };
     if (
       window.localStorage.getItem('You') ||
