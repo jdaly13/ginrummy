@@ -1,10 +1,10 @@
 # Gin Rummy
 
 version 2.0  
-Full functioning Game against computer/Joshua upto 100  
+Fully functioning Game against computer/Joshua upto 100  
 Rebuilt using vanilla javascript, Redux, and ES6 modules  
 
-full verision http://ginrummy.surge.sh using old JQUERY version 1.0
+full verision http://ginrummy.surge.sh 
 
 additions to be added in future versions
 *start new game
