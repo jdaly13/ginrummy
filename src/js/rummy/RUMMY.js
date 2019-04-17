@@ -1,6 +1,7 @@
 import configureStore from '../store';
 import { findFirstPlayerTotalValue, findJoshuaTotalValue, storeFinalJoshuaObject, playerDiscard, storeFinalFirstPlayerObject } from '../actions';
 import {furtherFilter, sortObjOfArrays, decideWhichOnesToKeep, findMatches, doWeTakeTopCard, checkScore, shitPile, checkTheValueof, finalFilterFunc} from '../dataStructures';
+import { cardArray } from '../constants';
 
 const store = configureStore();
 function RUMMY() {}
@@ -262,12 +263,12 @@ RUMMY.prototype = {
 
     for (prop in keep) {
       for (var i = 0; i < keep[prop].length; i++) {
-        object[prop][i] = '.' + prop + '.' + this.cardArray[keep[prop][i] - 1];
+        object[prop][i] = '.' + prop + '.' + cardArray[keep[prop][i] - 1];
       }
     }
 
     for (var j = 0; j < moreThanOneMatch.length; j++) {
-      matchArray.push('.' + this.cardArray[moreThanOneMatch[j] - 1]);
+      matchArray.push('.' + cardArray[moreThanOneMatch[j] - 1]);
     }
 
     object.match = matchArray;
@@ -393,7 +394,7 @@ RUMMY.prototype = {
       for (var i = 0; i < whatToFind.length; i++) {
         for (var j = 0; j < 2; j++) {
           // 2 is a match
-          var numberToLetters = '.' + that.cardArray[whatToFind[i] - 1];
+          var numberToLetters = '.' + cardArray[whatToFind[i] - 1];
           var watToPush = area.querySelectorAll(numberToLetters)[j].getAttribute('class').split(' ')[0] + whatToFind[i];
           deadWooodCardsArray.push(watToPush);
         }
@@ -538,7 +539,7 @@ RUMMY.prototype = {
     if (str == 'match') {
       arr.forEach(function(val) {
         num = extractNumber(val);
-        var string = that.cardArray[num - 1];
+        var string = cardArray[num - 1];
         if (player === 'getFirstPlayerScore') {
             that.DOMplayerArea.querySelector('.'+string).parentElement.classList.add('zooom');
         } else {
@@ -550,7 +551,7 @@ RUMMY.prototype = {
     } else {
       arr.forEach(function(val) {
         num = extractNumber(val);
-        var numString = '.' + that.cardArray[num - 1];
+        var numString = '.' + cardArray[num - 1];
         var suit = '.' + extractString(val);
         var together = suit + numString;
         if (player === 'getFirstPlayerScore') {

@@ -1,15 +1,8 @@
-import { cardArray, cardSuits } from '../constants';
-import { one_suit, cardValues, createDeckOfCards } from '../utils';
+import { cardSuits } from '../constants';
+import { one_suit, createDeckOfCards } from '../utils';
 import RUMMY from './RUMMY';
 export const rummy = Object.assign(RUMMY.prototype, {
-  cardArray,
-  cardSuits,
-  one_suit,
-  cardValues,
   deckofcards: createDeckOfCards(cardSuits, one_suit),
-  playHoverCalled: false,
-  whole_deck: [],
-  sortable: {},
   DOMbubble: document.querySelector('.bubble'),
   DOMplayer: document.getElementById('player'),
   DOMplayerArea: document.getElementById('area'),
