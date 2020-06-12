@@ -20,15 +20,18 @@ oneTimeEvents.createarrayofcards = function(callcreatehtmldeck) {
       arr.push(second_key + ' of ' + key + ' ' + suit[second_key]); //e.g ace of hearts 1
     }
   }
-  this.whole_deck = shuffle(arr); //shuffling the deck
+  //this.whole_deck = shuffle(arr); //shuffling the deck
+  const whole_deck = shuffle(arr);
   if (callcreatehtmldeck) {
-    this.fillinmaincontent();
+    this.fillinmaincontent(whole_deck);
     this.loopthroughdiv();
     this.dealcards();
   }
+  return whole_deck;
+
 };
-oneTimeEvents.fillinmaincontent = function() {
-  this.DOMdeck.innerHTML = this.createhtmlDeck(this.whole_deck);
+oneTimeEvents.fillinmaincontent = function(deck) {
+  this.DOMdeck.innerHTML = this.createhtmlDeck(deck);
   this.store.dispatch(createDeck('deckCreated'));
 };
 
@@ -38,7 +41,7 @@ oneTimeEvents.createhtmlDeck = function(wholeDeck) {
     html = '',
     suit;
   for (i = 0; i < wholedecklength; i++) {
-    suit = this.whole_deck[i].split(' ')[2];
+    suit = wholeDeck[i].split(' ')[2];
     html +=
       '<section class="wrapper"><div data-side="front" class=' +
       suit +

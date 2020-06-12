@@ -7,8 +7,7 @@ import '../scss/style.scss';
   //console.log(rummy.store.getState());
 //});
 
-oneTimeEvents.createarrayofcards();
-oneTimeEvents.fillinmaincontent();
+oneTimeEvents.fillinmaincontent(oneTimeEvents.createarrayofcards(false));
 oneTimeEvents.loopthroughdiv();
 oneTimeEvents.userEvents();
 player.userEvents();
